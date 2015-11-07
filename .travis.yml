@@ -1,11 +1,18 @@
 language: go
 go:
-  - 1.4
-
+- 1.4
 after_success:
-  - wget https://github.com/mattermost/platform/releases/download/v1.1.0/mattermost.tar.gz
-  - tar -xvzf mattermost.tar.gz
-  - go build
-  - mv mattermost-cf-integrator mattermost/
-  - 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
-  - zip -r mattermost-cf mattermost/*
+- wget https://github.com/mattermost/platform/releases/download/v1.1.0/mattermost.tar.gz
+- tar -xvzf mattermost.tar.gz
+- go build
+- mv mattermost-cf-integrator mattermost/
+- 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
+- zip -r mattermost-cf mattermost/*
+deploy:
+  provider: releases
+  api_key:
+    secure: dTe79zMisb19V6MSn+MTNihRY4alAwP7G2cmU503iwbkKmgSjE6ms8arwTs81qKp3dJXzY8UWfRMwbc3npgkyDTH68KBk+ka0vilczJOhfsF4GCBnTh9S7wv6p6rxOBoi5ivfsSzW/DTiNrXdRELZtrirQSqI7f5eoyd8iwDl5dzVpVRra7XwWB9VFd1NgVSVMzBN06swFfu9Dr/+MHsO+lp7KtZWmXwpsOMlgOKNsQu7EDc4aoODcAbFTrepVm5f1bDjmw4c9yT9lnJiP+YDfiMpttXXg6btHK6n3GyufUzYP+1jPEvwxuD2YfjksbANuOhdoHgFM4MSLxgkaijZAzdD25ES30KuigLzsYb5huISrsjiaBs/8jF2qstaxYgBmEF2rrDbhV7EXBQZQ3ayCauwFNBW6tAZZ0MkG9LRBYEInsYpd8e0V4ESUCRORyYXYqOqsa0DQ1DL8FYCQ5ovJW5fhuPJM+hiBGpL2WKd7ZMD4ozXYo0SHj9w6Au6kEyLEBBY3EBYBR8FZTeqG63kpQM/PkEVc0hnTNGrE4L9urufj0VeRR/wflIMxmEKiPKssrwTo7swX/0eGmu2aV4VAfuE4kW9dSA6Q/bqHIdEctLsaTfgNGBfuw9Vi93MxIJ/Tv22LRLdYxtTh63q9SQEB9t9bsApY2UuYOQ5LrIAfw=
+  file: mattermost-cf.zip
+  on:
+    tags: true
+    all_branches: true
