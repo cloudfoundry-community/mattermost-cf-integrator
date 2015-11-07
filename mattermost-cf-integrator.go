@@ -178,8 +178,8 @@ func cloudifyConfig(mattermostConfig *MattermostConfig) error {
 	return nil
 }
 func formatDataSource(dbUrl *url.URL, isPostgres bool) string {
-	var postgresString = "postgres://%s:%s@%s/%s?sslmode=disable&connect_timeout=10"
-	var mysqlString = "%s:%s@tcp(%s)/%s?charset=utf8mb4,utf8"
+	var postgresString = "postgres://%s:%s@%s%s?sslmode=disable&connect_timeout=10"
+	var mysqlString = "%s:%s@tcp(%s)%s?charset=utf8mb4,utf8"
 	var dataSource string
 	if (isPostgres) {
 		dataSource = postgresString

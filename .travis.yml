@@ -1,6 +1,8 @@
 language: go
 go:
 - 1.4
+script:
+- bin/test
 after_success:
 - wget https://github.com/mattermost/platform/releases/download/v1.1.0/mattermost.tar.gz
 - tar -xvzf mattermost.tar.gz
