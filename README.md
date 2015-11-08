@@ -1,6 +1,7 @@
 # mattermost-cf-integrator
 Integrate [mattermost](http://www.mattermost.org/) into Cloud Foundry.
-[Mattermost](http://www.mattermost.org/) s an open source, on-prem Slack-alternative.
+
+[Mattermost](http://www.mattermost.org/) is an open source, on-prem Slack-alternative.
 It offers modern communication from behind your firewall, including messaging and file sharing across PCs and phones with archiving and instant search.
 
 ## Getting start
