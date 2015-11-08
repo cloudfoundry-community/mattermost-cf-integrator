@@ -1,4 +1,4 @@
-# mattermost-cf-integrator
+# mattermost-cf-integrator [![Build Status](https://travis-ci.org/ArthurHlt/mattermost-cf-integrator.svg)](https://travis-ci.org/ArthurHlt/mattermost-cf-integrator)
 Integrate [mattermost](http://www.mattermost.org/) into Cloud Foundry.
 
 [Mattermost](http://www.mattermost.org/) is an open source, on-prem Slack-alternative.
