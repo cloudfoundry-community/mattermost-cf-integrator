@@ -1,6 +1,8 @@
 language: go
 go:
 - 1.5
+before_deploy:
+- gem install mime-types -v 2.6.2
 script:
 - bin/test
 after_success:
