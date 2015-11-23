@@ -4,7 +4,7 @@ go:
 script:
 - bin/test
 after_success:
-- wget https://github.com/mattermost/platform/releases/download/v1.1.0/mattermost.tar.gz
+- wget https://github.com/mattermost/platform/releases/download/v1.2.1/mattermost.tar.gz
 - tar -xvzf mattermost.tar.gz
 - go build
 - mv mattermost-cf-integrator mattermost/
