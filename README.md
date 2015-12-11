@@ -1,4 +1,4 @@
-# mattermost-cf-integrator [![Build Status](https://travis-ci.org/ArthurHlt/mattermost-cf-integrator.svg)](https://travis-ci.org/ArthurHlt/mattermost-cf-integrator)
+# mattermost-cf-integrator [![Build Status](https://travis-ci.org/cloudfoundry-community/mattermost-cf-integrator.svg)](https://travis-ci.org/cloudfoundry-community/mattermost-cf-integrator)
 Integrate [mattermost](http://www.mattermost.org/) into Cloud Foundry.
 
 [Mattermost](http://www.mattermost.org/) is an open source, on-prem Slack-alternative.
@@ -13,4 +13,4 @@ It offers modern communication from behind your firewall, including messaging an
 5. Bind to the app (e.g: `cf bs mattermost db-mattermost`)
 6. restage your app (e.g: `cf restage mattermost`) and you're done
 
-[1]: https://github.com/ArthurHlt/mattermost-cf-integrator/releases
+[1]: https://github.com/cloudfoundry-community/mattermost-cf-integrator/releases
