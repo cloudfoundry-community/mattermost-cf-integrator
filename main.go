@@ -1,6 +1,6 @@
 package main
 import (
-	. "github.com/ArthurHlt/mattermost-cf-integrator/mci"
+	. "github.com/cloudfoundry-community/mattermost-cf-integrator/mci"
 	"fmt"
 	"os"
 	"path"
