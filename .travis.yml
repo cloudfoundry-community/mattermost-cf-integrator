@@ -10,7 +10,7 @@ before_deploy:
 script:
 - bin/test
 after_success:
-- curl https://releases.mattermost.com/2.2.0/mattermost-team-2.2.0-linux-amd64.tar.gz -o mattermost-team-2.2.0-linux-amd64.tar.gz
+- curl https://releases.mattermost.com/2.2.0/mattermost-team-2.2.0-linux-amd64.tar.gz -o mattermost.tar.gz
 - tar -xvzf mattermost.tar.gz
 - go build
 - mv mattermost-cf-integrator mattermost/
