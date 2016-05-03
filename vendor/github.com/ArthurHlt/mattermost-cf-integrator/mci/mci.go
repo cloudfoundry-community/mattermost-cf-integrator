@@ -10,6 +10,7 @@ import (
 	"errors"
 )
 
+
 func PushConfig(mattermostConfig *MattermostConfig, configFilePath string) error {
 	configData, err := json.Marshal(mattermostConfig)
 	if err != nil {
@@ -25,7 +26,7 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	if !IsInCloudFoundry() {
 		return errors.New("Not in Cloud Foundry environment.")
 	}
-	mattermostConfig.ServiceSettings.ListenAddress = ":" + os.Getenv("PORT")
+	mattermostConfig.Servicesettings.Listenaddress = ":" + os.Getenv("PORT")
 	appEnv, err := cfenv.Current()
 	if err != nil {
 		return err
@@ -33,8 +34,8 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	dbService, err = getPostgresDb(appEnv)
 	if err != nil {
 		dbService, err = getMysqlDb(appEnv)
-	} else {
-		mattermostConfig.SqlSettings.DriverName = "postgres"
+	}else {
+		mattermostConfig.Sqlsettings.Drivername = "postgres"
 	}
 	if err != nil {
 		return errors.New("Cannot find database service from cloudfoundry")
@@ -43,10 +44,10 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	if err != nil {
 		return err
 	}
-	if mattermostConfig.SqlSettings.DriverName == "postgres" {
-		mattermostConfig.SqlSettings.DataSource = formatDataSource(dbUrl, true)
-	} else {
-		mattermostConfig.SqlSettings.DataSource = formatDataSource(dbUrl, false)
+	if mattermostConfig.Sqlsettings.Drivername == "postgres" {
+		mattermostConfig.Sqlsettings.Datasource = formatDataSource(dbUrl, true)
+	}else {
+		mattermostConfig.Sqlsettings.Datasource = formatDataSource(dbUrl, false)
 	}
 
 	return nil
@@ -57,7 +58,7 @@ func formatDataSource(dbUrl *url.URL, isPostgres bool) string {
 	var dataSource string
 	if (isPostgres) {
 		dataSource = postgresString
-	} else {
+	}else {
 		dataSource = mysqlString
 	}
 	password, _ := dbUrl.User.Password()
