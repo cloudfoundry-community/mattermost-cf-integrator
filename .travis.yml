@@ -2,7 +2,6 @@ language: go
 go:
 - 1.6.2
 install:
-- go env
 - go get -v github.com/golang/protobuf/proto
 - go get -v -d ./...
 before_deploy:
@@ -10,15 +9,13 @@ before_deploy:
 script:
 - bin/test
 after_success:
-- curl https://releases.mattermost.com/2.2.0/mattermost-team-2.2.0-linux-amd64.tar.gz -o mattermost.tar.gz
+- export FINAL_TAG=`echo $TRAVIS_TAG | sed -e "s/v//g"`
+- curl https://releases.mattermost.com/${FINAL_TAG}/mattermost-team-${FINAL_TAG}-linux-amd64.tar.gz -o mattermost.tar.gz
 - tar -xvzf mattermost.tar.gz
 - go build
 - mv mattermost-cf-integrator mattermost/
 - ! 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
 - zip -r mattermost-cf mattermost/*
-env:
-  global:
-  -
 deploy:
   provider: releases
   api_key:
