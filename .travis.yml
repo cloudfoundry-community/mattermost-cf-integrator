@@ -2,7 +2,8 @@ language: go
 go:
 - 1.6.2
 install:
-- true
+- export GOPATH=${TRAVIS_BUILD_DIR}
+- go get -t -v ./...
 before_deploy:
 - gem install mime-types -v 2.6.2
 script:
