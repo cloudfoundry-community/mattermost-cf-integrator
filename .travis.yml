@@ -2,7 +2,6 @@ language: go
 go:
 - 1.6.2
 install:
-- export GOPATH=${TRAVIS_BUILD_DIR}
 - go env
 - go get -v github.com/golang/protobuf/proto
 - go get -v -d ./...
@@ -17,6 +16,9 @@ after_success:
 - mv mattermost-cf-integrator mattermost/
 - ! 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
 - zip -r mattermost-cf mattermost/*
+env:
+  global:
+  -
 deploy:
   provider: releases
   api_key:
