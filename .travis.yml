@@ -3,7 +3,7 @@ go:
 - 1.6.2
 install:
 - export GOPATH=${TRAVIS_BUILD_DIR}
-- go get -t -v ./...
+- go get -v github.com/golang/protobuf/proto
 before_deploy:
 - gem install mime-types -v 2.6.2
 script:
