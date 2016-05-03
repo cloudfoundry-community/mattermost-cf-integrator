@@ -9,8 +9,14 @@ import (
 )
 
 var _ = Describe("Mci", func() {
-	var vcapApplication, vcapServices, port string
-	configPath := path.Join("../", "fixtures", "config.json")
+	var vcapApplication, vcapServices, port, dir, fixturePath string
+	var err error
+	dir, err = os.Getwd()
+	if err != nil {
+		Fail(err.Error())
+	}
+	fixturePath = path.Join(dir, "..", "fixtures")
+	configPath := path.Join(fixturePath, "config.json")
 	BeforeEach(func() {
 		vcapApplication = os.Getenv("VCAP_APPLICATION")
 		vcapServices = os.Getenv("VCAP_SERVICES")
@@ -34,7 +40,7 @@ var _ = Describe("Mci", func() {
 		Describe("when database service is mysql", func() {
 			It("should update config file for mattermost to consider right port and mysql service found by tag", func() {
 				var expectedMattermostConfig *MattermostConfig
-				expectedConfigPath := path.Join("../", "fixtures", "config-mysql.json")
+				expectedConfigPath := path.Join(fixturePath, "config-mysql.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
@@ -47,7 +53,7 @@ var _ = Describe("Mci", func() {
 			It("should update config file for mattermost to consider right port and mysql service found by service name", func() {
 				var expectedMattermostConfig *MattermostConfig
 				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}]}")
-				expectedConfigPath := path.Join("../", "fixtures", "config-mysql.json")
+				expectedConfigPath := path.Join(fixturePath, "config-mysql.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
@@ -63,7 +69,7 @@ var _ = Describe("Mci", func() {
 			It("should update config file for mattermost to consider right port and postgres service found by tag", func() {
 				var expectedMattermostConfig *MattermostConfig
 				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[\"postgres\"]}]}")
-				expectedConfigPath := path.Join("../", "fixtures", "config-postgres.json")
+				expectedConfigPath := path.Join(fixturePath, "config-postgres.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
@@ -76,7 +82,7 @@ var _ = Describe("Mci", func() {
 			It("should update config file for mattermost to consider right port and postgres service found by name", func() {
 				var expectedMattermostConfig *MattermostConfig
 				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"postgres-mattermost\",\"plan\":\"spark\",\"tags\":[]}]}")
-				expectedConfigPath := path.Join("../", "fixtures", "config-postgres.json")
+				expectedConfigPath := path.Join(fixturePath, "config-postgres.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
@@ -91,7 +97,7 @@ var _ = Describe("Mci", func() {
 			It("should choose postgres database", func() {
 				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[\"mysql\"]}],\"postgresdb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[\"postgres\"]}]}")
 				var expectedMattermostConfig *MattermostConfig
-				expectedConfigPath := path.Join("../", "fixtures", "config-postgres.json")
+				expectedConfigPath := path.Join(fixturePath, "config-postgres.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
