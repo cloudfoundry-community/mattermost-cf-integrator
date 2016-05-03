@@ -4,9 +4,9 @@ go:
 install:
 - export GOPATH=${TRAVIS_BUILD_DIR}
 - go get -v github.com/golang/protobuf/proto
-- go get github.com/onsi/ginkgo/ginkgo
-- go get github.com/onsi/gomega
-- go get -v ./...
+- go get -v github.com/onsi/ginkgo/ginkgo
+- go get -v github.com/onsi/gomega
+- go get -v -d ./...
 before_deploy:
 - gem install mime-types -v 2.6.2
 script:
