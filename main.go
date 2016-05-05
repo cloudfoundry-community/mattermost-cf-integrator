@@ -1,4 +1,5 @@
 package main
+
 import (
 	. "github.com/cloudfoundry-community/mattermost-cf-integrator/mci"
 	"fmt"
@@ -6,6 +7,7 @@ import (
 	"path"
 	"os/exec"
 )
+
 func main() {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -24,7 +26,14 @@ func main() {
 		os.Exit(1)
 	}
 	PushConfig(config, configFilePath)
-	mattermostExec := exec.Command(path.Join(wd, "bin", "platform"))
+	var mattermostExec *exec.Cmd
+	if len(os.Args) > 1 {
+		args := os.Args[1:]
+		mattermostExec = exec.Command(path.Join(wd, "bin", "platform"), args...)
+	} else {
+		mattermostExec = exec.Command(path.Join(wd, "bin", "platform"))
+	}
+
 	mattermostExec.Stdout = os.Stdout
 	mattermostExec.Stderr = os.Stderr
 	err = mattermostExec.Run()
