@@ -75,6 +75,7 @@ Now we can set in the file `config/config.json` endpoints for UAA and credential
     "UserApiEndpoint": "https://uaa-to-gitlab.my.cf.domain.com/userinfo"
 }
 ```
+
 **Note** the value for `UserApiEndpoint` this is the url of you previously deployed app.
 
 To make users only login and register with cloudfoundry set to `false` values `EnableSignUpWithEmail`, `EnableSignInWithEmail` in `config/config.json`
@@ -83,8 +84,18 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
 ### (**Optional**) Remove reference about GitLab in Web UI
 
-1. Change the word `GitLab` by `Cloud Foundry`, run `$ sed -i "" 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
-2. Change the GitLab logo by the Cloud Foundry logo: `$ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png && cp cloudfoundryLogo.png web/static/images/gitlabLogo.png`
+1. Change the word `GitLab` by `Cloud Foundry`
+
+ ```
+ $ sed -i "" 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
+ ```
+
+2. Change the GitLab logo by the Cloud Foundry logo:
+
+ ```
+ $ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png
+ $ cp cloudfoundryLogo.png web/static/images/gitlabLogo.png
+ ```
 
 Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
