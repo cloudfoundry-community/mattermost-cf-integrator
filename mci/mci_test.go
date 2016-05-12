@@ -1,7 +1,7 @@
 package mci_test
 
 import (
-	. "github.com/ArthurHlt/mattermost-cf-integrator/mci"
+	. "github.com/cloudfoundry-community/mattermost-cf-integrator/mci"
 	"path"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -118,6 +118,53 @@ var _ = Describe("Mci", func() {
 				Expect(err.Error()).To(ContainSubstring("Cannot find database"))
 			})
 		})
+		Describe("when there a smtp service", func() {
+			Context("with a sendgrid smtp provided", func() {
+				It("should fill information about the sendgrid smtp server", func() {
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"sendgrid\":[{\"credentials\":{\"hostname\":\"smtp.host.com\",\"password\":\"password\",\"username\":\"user\"},\"label\":\"sendgrid\",\"name\":\"test-sendgrid\",\"plan\":\"free\",\"provider\":null,\"syslog_drain_url\":null,\"tags\":[\"Retail\",\"Email\",\"smtp\",\"Inventorymanagement\"]}]}")
+					var expectedMattermostConfig *MattermostConfig
+					expectedConfigPath := path.Join(fixturePath, "config-smtp-sendgrid.json")
+					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
+					Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
+					config, err := ExtractConfig(configPath)
+					Expect(err).NotTo(HaveOccurred())
+					err = CloudifyConfig(config)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				})
+			})
+			Context("with an unknown smtp provided", func() {
+				It("should fill information about a default smtp server", func() {
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"unknown-smtp\":[{\"credentials\":{\"hostname\":\"smtp.host.com\",\"password\":\"password\",\"username\":\"user\"},\"label\":\"unknown-smtp\",\"name\":\"test-sendgrid\",\"plan\":\"free\",\"provider\":null,\"syslog_drain_url\":null,\"tags\":[\"Retail\",\"Email\",\"smtp\",\"Inventorymanagement\"]}]}")
+					var expectedMattermostConfig *MattermostConfig
+					expectedConfigPath := path.Join(fixturePath, "config-smtp-default.json")
+					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
+					Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
+
+					config, err := ExtractConfig(configPath)
+					Expect(err).NotTo(HaveOccurred())
+					err = CloudifyConfig(config)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				})
+			})
+		})
+		Describe("when there a s3 service", func() {
+			It("should fill information about the s3 server", func() {
+				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"uri\":\"https://BU8FRUIT:MGB8A%3D%3D@p-riakcs.myriak.com/service-instance\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"riak-cs\",\"s3\"]}]}")
+				var expectedMattermostConfig *MattermostConfig
+				expectedConfigPath := path.Join(fixturePath, "config-s3.json")
+				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
+				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
+
+				config, err := ExtractConfig(configPath)
+				Expect(err).NotTo(HaveOccurred())
+				err = CloudifyConfig(config)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+			})
+
+		})
 	})
 })
