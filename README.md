@@ -21,6 +21,7 @@ To fully use mattermost you should add a smtp, you have two ways to do it:
 
 1. Do it manually by editing the `config/config.json` following the doc: http://docs.mattermost.com/install/smtp-email-setup.html
 2. (*Preferred*) Bind a smtp service on your app and integrator will do the rest, example with Pivotal Web Service and sendgrid:
+
  ```
  $ cf cs sendgrid free mysmtp
  $ cf bs mattermost mysmtp
@@ -34,6 +35,7 @@ You should set an s3 storage on your mattermost, like for SMTP you have two ways
 
 1. Do it manually by editing the `config/config.json` following the doc: http://docs.mattermost.com/administration/config-settings.html?highlight=amazons3endpoint#file-settings
 2. Bind a s3 service on your app and integrator will do the rest, example [riak-cs](https://github.com/cloudfoundry/cf-riak-cs-release) service:
+
  ```
  $ cf cs p-riakcs developer mys3
  $ cf bs mattermost mys3
