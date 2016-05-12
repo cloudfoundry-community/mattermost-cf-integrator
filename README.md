@@ -42,5 +42,50 @@ You should set an s3 storage on your mattermost, like for SMTP you have two ways
  $ cf restage mattermost
  ```
 
+## Integrate with UAA (to authenticate users over Cloud Foundry)
+
+It can be interesting to login mattermost with Cloud Foundry. Mattermost can use GitLab SSO to login users and this functionality can be use to login over Cloud Foundry.
+
+To do this we will need to register a client in the UAA, here an example to register a client:
+
+```
+$ uaac client add mattermost --authorized_grant_types "authorization_code" --name "mattermost" --scope "openid" --authorities "openid" -s "mysupersecret"
+```
+
+You will also need to deploy another app on Cloud Foundry, this app will be responsible to translate user informations from UAA to GitLab.
+This app is a reverse proxy on your UAA which only transform json receive from the UAA on https://login.url-of-my.api/userinfo to another json asked by mattermost.
+
+Follow these steps to deploy this application:
+
+1. clone https://github.com/ArthurHlt/uaa-proxifier.git : `$ git clone https://github.com/ArthurHlt/uaa-proxifier.git`
+2. set in the value for `UAA_URL` in `uaa-proxifier/manifest.yml` by the url of your UAA
+3. deploy it: `$ cf push`
+
+
+Now we can set in the file `config/config.json` endpoints for UAA and credentials, example:
+
+```
+"GitLabSettings": {
+    "Enable": true,
+    "Secret": "mysupersecret",
+    "Id": "mattermost",
+    "Scope": "openid",
+    "AuthEndpoint": "https://login.url-of-my.api/oauth/authorize",
+    "TokenEndpoint": "https://login.url-of-my.api/oauth/authorize/oauth/token",
+    "UserApiEndpoint": "https://uaa-to-gitlab.my.cf.domain.com/userinfo"
+}
+```
+**Note** the value for `UserApiEndpoint` this is the url of you previously deployed app.
+
+To make users only login and register with cloudfoundry set to `false` values `EnableSignUpWithEmail`, `EnableSignInWithEmail` in `config/config.json`
+
+Now, you can (re)deploy your mattermost: `$ cf push mattermost`
+
+### (**Optional**) Remove reference about GitLab in Web UI
+
+1. Change the word `GitLab` by `Cloud Foundry`, run `$ sed -i "" 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
+2. Change the GitLab logo by the Cloud Foundry logo: `$ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png && cp cloudfoundryLogo.png web/static/images/gitlabLogo.png`
+
+Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
 [1]: https://github.com/cloudfoundry-community/mattermost-cf-integrator/releases
