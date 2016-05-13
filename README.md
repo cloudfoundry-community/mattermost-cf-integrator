@@ -1,6 +1,8 @@
 # mattermost-cf-integrator [![Build Status](https://travis-ci.org/cloudfoundry-community/mattermost-cf-integrator.svg)](https://travis-ci.org/cloudfoundry-community/mattermost-cf-integrator)
 Integrate [mattermost](http://www.mattermost.org/) into Cloud Foundry.
 
+**Why it's different from the [mattermost-boshrelease](https://github.com/cloudfoundry-community/mattermost-boshrelease) ?** the boshrelease made by stark&wayne is made for Cloud Foundry operators and only them can deploy mattermost in an IaaS (not Cloud Foundry in fact). Here it's made for final Cloud Foundry users who want a private mattermost running inside a Cloud Foundry like [Bluemix](https://console.ng.bluemix.net/) or [PWS](https://run.pivotal.io).
+
 [Mattermost](http://www.mattermost.org/) is an open source, on-prem Slack-alternative.
 It offers modern communication from behind your firewall, including messaging and file sharing across PCs and phones with archiving and instant search.
 
