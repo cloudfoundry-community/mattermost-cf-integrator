@@ -48,6 +48,9 @@ You should set an s3 storage on your mattermost, like for SMTP you have two ways
 
 ## Integrate with UAA (to authenticate users over Cloud Foundry)
 
+**WARNING**: There is a regression in mattermost version 3.0.0 for the SSO, see: https://github.com/mattermost/platform/pull/3000.
+For now with this version theses settings are not usable.
+
 It can be interesting to login mattermost with Cloud Foundry. Mattermost can use GitLab SSO to login users and this functionality can be use to login over Cloud Foundry.
 
 To do this we will need to register a client in the UAA, here an example to register a client:
@@ -88,19 +91,38 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
 ### (**Optional**) Remove reference about GitLab in Web UI
 
+
 1. Change the word `GitLab` by `Cloud Foundry`
+
+**For version 2.X.X**:
 
  ```
  $ sed -i "" 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
  ```
 
+ **For version 3.X.X**:
+
+  ```
+  $ sed -i "" 's/GitLab/Cloud Foundry/g' webapp/dist/i18n/*
+  ```
+
 2. Change the GitLab logo by the Cloud Foundry logo:
+
+**For version 2.X.X**:
 
  ```
  $ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png
  $ cp cloudfoundryLogo.png web/static/images/gitlabLogo.png
  ```
 
+**For version 3.X.X**:
+
+ ```
+ $ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png
+ $ cp cloudfoundryLogo.png webapp/dist/files/f78b8bf800e4836d75ce79d947a235c4.png
+ ```
+
 Now, you can (re)deploy your mattermost: `$ cf push mattermost`
+
 
 [1]: https://github.com/cloudfoundry-community/mattermost-cf-integrator/releases
