@@ -92,7 +92,7 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 ### (**Optional**) Remove reference about GitLab in Web UI
 
 
-1. Change the word `GitLab` by `Cloud Foundry`
+#### Change the word `GitLab` by `Cloud Foundry`
 
 **For version 2.X.X**:
 
@@ -106,7 +106,7 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
   $ sed -i "" 's/GitLab/Cloud Foundry/g' webapp/dist/i18n/*
   ```
 
-2. Change the GitLab logo by the Cloud Foundry logo:
+#### Change the GitLab logo by the Cloud Foundry logo:
 
 **For version 2.X.X**:
 
