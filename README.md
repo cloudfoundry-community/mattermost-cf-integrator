@@ -48,9 +48,6 @@ You should set an s3 storage on your mattermost, like for SMTP you have two ways
 
 ## Integrate with UAA (to authenticate users over Cloud Foundry)
 
-**WARNING**: There is a regression in mattermost version 3.0.0 for the SSO, see: https://github.com/mattermost/platform/pull/3000.
-For now with this version theses settings are not usable.
-
 It can be interesting to login mattermost with Cloud Foundry. Mattermost can use GitLab SSO to login users and this functionality can be use to login over Cloud Foundry.
 
 To do this we will need to register a client in the UAA, here an example to register a client:
