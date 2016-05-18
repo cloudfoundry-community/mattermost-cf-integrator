@@ -151,20 +151,37 @@ var _ = Describe("Mci", func() {
 			})
 		})
 		Describe("when there a s3 service", func() {
-			It("should fill information about the s3 server", func() {
-				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"uri\":\"https://BU8FRUIT:MGB8A%3D%3D@p-riakcs.myriak.com/service-instance\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"riak-cs\",\"s3\"]}]}")
-				var expectedMattermostConfig *MattermostConfig
-				expectedConfigPath := path.Join(fixturePath, "config-s3.json")
-				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
-				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
+			Context("with an s3 broker with uri", func() {
+				It("should fill information about the s3 server", func() {
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"uri\":\"https://BU8FRUIT:MGB8A%3D%3D@p-riakcs.myriak.com/service-instance\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"riak-cs\",\"s3\"]}]}")
+					var expectedMattermostConfig *MattermostConfig
+					expectedConfigPath := path.Join(fixturePath, "config-s3.json")
+					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
+					Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
 
-				config, err := ExtractConfig(configPath)
-				Expect(err).NotTo(HaveOccurred())
-				err = CloudifyConfig(config)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+					config, err := ExtractConfig(configPath)
+					Expect(err).NotTo(HaveOccurred())
+					err = CloudifyConfig(config)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				})
 			})
 
+			Context("with an cloudfoundry-community/s3-cf-service-broker", func() {
+				It("should fill information about the s3 server", func() {
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"username\":\"a-user\",\"access_key_id\":\"BU8FRUIT\",\"bucket\":\"service-instance\",\"secret_access_key\":\"MGB8A==\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"s3\"]}]}")
+					var expectedMattermostConfig *MattermostConfig
+					expectedConfigPath := path.Join(fixturePath, "config-s3-amazon-broker.json")
+					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
+					Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
+
+					config, err := ExtractConfig(configPath)
+					Expect(err).NotTo(HaveOccurred())
+					err = CloudifyConfig(config)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				})
+			})
 		})
 	})
 })

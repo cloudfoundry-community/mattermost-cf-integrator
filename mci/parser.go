@@ -13,7 +13,6 @@ func getUriFromService(service *cfenv.Service) string {
 }
 
 func getStringValueFromService(service *cfenv.Service, key string) string {
-
 	value, ok := service.Credentials[key].(string)
 	if !ok {
 		return ""
