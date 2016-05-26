@@ -22,6 +22,8 @@ type MattermostConfig struct {
 				  SessionLengthMobileInDays         int `json:"SessionLengthMobileInDays"`
 				  SessionLengthSSOInDays            int `json:"SessionLengthSSOInDays"`
 				  SessionCacheInMinutes             int `json:"SessionCacheInMinutes"`
+				  WebsocketSecurePort				int `json:"WebsocketSecurePort"`
+				  WebsocketPort						int `json:"WebsocketPort"`
 			  } `json:"ServiceSettings"`
 	TeamSettings      struct {
 				  SiteName                  string `json:"SiteName"`
