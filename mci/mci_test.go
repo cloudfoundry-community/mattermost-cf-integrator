@@ -48,7 +48,7 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				Expect(config).To(Equal(expectedMattermostConfig))
 			})
 			It("should update config file for mattermost to consider right port and mysql service found by service name", func() {
 				var expectedMattermostConfig *MattermostConfig
@@ -61,7 +61,7 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				Expect(config).To(Equal(expectedMattermostConfig))
 			})
 		})
 
@@ -77,7 +77,7 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				Expect(config).To(Equal(expectedMattermostConfig))
 			})
 			It("should update config file for mattermost to consider right port and postgres service found by name", func() {
 				var expectedMattermostConfig *MattermostConfig
@@ -90,7 +90,7 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				Expect(config).To(Equal(expectedMattermostConfig))
 			})
 		})
 		Describe("when have a postgres and a mysql services", func() {
@@ -105,7 +105,7 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+				Expect(config).To(Equal(expectedMattermostConfig))
 			})
 		})
 		Describe("when there is no database service", func() {
@@ -131,7 +131,7 @@ var _ = Describe("Mci", func() {
 					Expect(err).NotTo(HaveOccurred())
 					err = CloudifyConfig(config)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+					Expect(config).To(Equal(expectedMattermostConfig))
 				})
 			})
 			Context("with an unknown smtp provided", func() {
@@ -146,7 +146,7 @@ var _ = Describe("Mci", func() {
 					Expect(err).NotTo(HaveOccurred())
 					err = CloudifyConfig(config)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+					Expect(config).To(Equal(expectedMattermostConfig))
 				})
 			})
 		})
@@ -163,7 +163,7 @@ var _ = Describe("Mci", func() {
 					Expect(err).NotTo(HaveOccurred())
 					err = CloudifyConfig(config)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+					Expect(config).To(Equal(expectedMattermostConfig))
 				})
 			})
 
@@ -179,7 +179,7 @@ var _ = Describe("Mci", func() {
 					Expect(err).NotTo(HaveOccurred())
 					err = CloudifyConfig(config)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(config).To(BeEquivalentTo(expectedMattermostConfig))
+					Expect(config).To(Equal(expectedMattermostConfig))
 				})
 			})
 		})

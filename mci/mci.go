@@ -26,6 +26,12 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	if err != nil {
 		return err
 	}
+	if mattermostConfig.ServiceSettings.WebsocketPort == 0 {
+		mattermostConfig.ServiceSettings.WebsocketPort = 80
+	}
+	if mattermostConfig.ServiceSettings.WebsocketSecurePort == 0 {
+		mattermostConfig.ServiceSettings.WebsocketSecurePort = 443
+	}
 	err = cloudifyDatabase(appEnv, mattermostConfig)
 	if err != nil {
 		return err
