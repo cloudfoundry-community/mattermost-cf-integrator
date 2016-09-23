@@ -116,7 +116,7 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
  ```
  $ wget https://rawgit.com/cloudfoundry-community/mattermost-cf-integrator/master/cloudfoundryLogo.png
- $ cp cloudfoundryLogo.png webapp/dist/files/f78b8bf800e4836d75ce79d947a235c4.png
+ $ cp cloudfoundryLogo.png webapp/dist/files/bf61680806a56e50a7857eeeea863f01.png
  ```
 
 Now, you can (re)deploy your mattermost: `$ cf push mattermost`
