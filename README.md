@@ -94,14 +94,14 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 **For version 2.X.X**:
 
  ```
- $ sed -i "" 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
+ $ sed -i 's/GitLab/Cloud Foundry/g' web/static/i18n/*`
  ```
 
  **For version 3.X.X**:
 
   ```
-  $ sed -i "" 's/GitLab/Cloud Foundry/g' webapp/dist/i18n/*
-  $ sed -i "" 's/"GitLab/"Cloud Foundry/g' webapp/dist/*.js
+  $ sed -i 's/GitLab/Cloud Foundry/g' webapp/dist/i18n/*
+  $ sed -i 's/"GitLab/"Cloud Foundry/g' webapp/dist/*.js
   ```
 
 #### Change the GitLab logo by the Cloud Foundry logo:
