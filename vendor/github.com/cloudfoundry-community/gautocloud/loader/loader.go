@@ -351,7 +351,6 @@ func (l *Loader) load(connector connectors.Connector) []StoredService {
 			connector.Name(),
 			strings.Join(connector.Tags(), ", "),
 		)
-		l.logger.Info("Connector '%s' didn't load any services. (No service match the connector, run in debug mode for more informations)", connector.Id())
 		return storedServices
 	}
 	serviceType := reflect.TypeOf(connector.Schema())
