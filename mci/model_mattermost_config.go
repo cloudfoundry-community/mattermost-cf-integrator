@@ -27,6 +27,7 @@ type MattermostConfig struct {
 				     EnableSecurityFixAlert            bool `json:"EnableSecurityFixAlert"`
 				     EnableInsecureOutgoingConnections bool `json:"EnableInsecureOutgoingConnections"`
 				     EnableMultifactorAuthentication   bool `json:"EnableMultifactorAuthentication"`
+				     EnforceMultifactorAuthentication  bool `json:"EnforceMultifactorAuthentication"`
 				     AllowCorsFrom                     string `json:"AllowCorsFrom"`
 				     SessionLengthWebInDays            int `json:"SessionLengthWebInDays"`
 				     SessionLengthMobileInDays         int `json:"SessionLengthMobileInDays"`
@@ -37,6 +38,9 @@ type MattermostConfig struct {
 				     WebserverMode                     string `json:"WebserverMode"`
 				     EnableCustomEmoji                 bool `json:"EnableCustomEmoji"`
 				     RestrictCustomEmojiCreation       string `json:"RestrictCustomEmojiCreation"`
+				     RestrictPostDelete                string `json:"RestrictPostDelete"`
+				     AllowEditPost                     string `json:"AllowEditPost"`
+				     PostEditTimeLimit                 int `json:"PostEditTimeLimit"`
 			     } `json:"ServiceSettings"`
 	TeamSettings         struct {
 				     SiteName                         string `json:"SiteName"`
@@ -50,10 +54,15 @@ type MattermostConfig struct {
 				     CustomDescriptionText            string `json:"CustomDescriptionText"`
 				     RestrictDirectMessage            string `json:"RestrictDirectMessage"`
 				     RestrictTeamInvite               string `json:"RestrictTeamInvite"`
+				     RestrictPublicChannelCreation    string `json:"RestrictPublicChannelCreation"`
+				     RestrictPrivateChannelCreation   string `json:"RestrictPrivateChannelCreation"`
 				     RestrictPublicChannelManagement  string `json:"RestrictPublicChannelManagement"`
 				     RestrictPrivateChannelManagement string `json:"RestrictPrivateChannelManagement"`
+				     RestrictPublicChannelDeletion    string `json:"RestrictPublicChannelDeletion"`
+				     RestrictPrivateChannelDeletion   string `json:"RestrictPrivateChannelDeletion"`
 				     UserStatusAwayTimeout            int `json:"UserStatusAwayTimeout"`
 				     MaxChannelsPerTeam               int `json:"MaxChannelsPerTeam"`
+				     MaxNotificationsPerChannel       int `json:"MaxNotificationsPerChannel"`
 			     } `json:"TeamSettings"`
 	SqlSettings          struct {
 				     DriverName         string `json:"DriverName"`
@@ -186,6 +195,7 @@ type MattermostConfig struct {
 				     UsernameAttribute           string `json:"UsernameAttribute"`
 				     NicknameAttribute           string `json:"NicknameAttribute"`
 				     IDAttribute                 string `json:"IdAttribute"`
+				     PositionAttribute           string `json:"PositionAttribute"`
 				     SyncIntervalMinutes         int `json:"SyncIntervalMinutes"`
 				     SkipCertificateVerification bool `json:"SkipCertificateVerification"`
 				     QueryTimeout                int `json:"QueryTimeout"`
@@ -218,6 +228,7 @@ type MattermostConfig struct {
 				     UsernameAttribute           string `json:"UsernameAttribute"`
 				     NicknameAttribute           string `json:"NicknameAttribute"`
 				     LocaleAttribute             string `json:"LocaleAttribute"`
+				     PositionAttribute           string `json:"PositionAttribute"`
 				     LoginButtonText             string `json:"LoginButtonText"`
 			     } `json:"SamlSettings"`
 	NativeAppSettings    struct {
@@ -226,10 +237,18 @@ type MattermostConfig struct {
 				     IosAppDownloadLink     string `json:"IosAppDownloadLink"`
 			     } `json:"NativeAppSettings"`
 	ClusterSettings      struct {
-				     Enable                 bool   `json:"Enable"`
+				     Enable                 bool `json:"Enable"`
 				     InterNodeListenAddress string `json:"InterNodeListenAddress"`
 				     InterNodeUrls          []interface{} `json:"InterNodeUrls"`
 			     } `json:"ClusterSettings"`
+	MetricsSettings      struct {
+				     Enable           bool `json:"Enable"`
+				     BlockProfileRate int `json:"BlockProfileRate"`
+				     ListenAddress    string `json:"ListenAddress"`
+			     } `json:"MetricsSettings"`
+	AnalyticsSettings    struct {
+				     MaxUsersForStatistics int `json:"MaxUsersForStatistics"`
+			     } `json:"AnalyticsSettings"`
 	WebrtcSettings       struct {
 				     Enable              bool `json:"Enable"`
 				     GatewayWebsocketURL string `json:"GatewayWebsocketUrl"`
