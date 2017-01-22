@@ -27,16 +27,16 @@ var _ = Describe("Mci", func() {
 		os.Setenv("VCAP_SERVICES", vcapServices)
 		os.Setenv("PORT", port)
 	})
-	Context("not in cloud foundry", func() {
+	Context("Not in any cloud", func() {
 		It("should not start anything", func() {
 			os.Setenv("VCAP_APPLICATION", "")
-			Expect(IsInCloudFoundry()).To(BeFalse())
+
 			err := CloudifyConfig(&MattermostConfig{})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("Not in Cloud Foundry"))
+			Expect(err.Error()).To(ContainSubstring("Not in any cloud"))
 		})
 	})
-	Context("in cloud foundry", func() {
+	Context("in cloud", func() {
 		Describe("when database service is mysql", func() {
 			It("should update config file for mattermost to consider right port and mysql service found by tag", func() {
 				var expectedMattermostConfig *MattermostConfig
@@ -53,6 +53,7 @@ var _ = Describe("Mci", func() {
 			It("should update config file for mattermost to consider right port and mysql service found by service name", func() {
 				var expectedMattermostConfig *MattermostConfig
 				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}]}")
+
 				expectedConfigPath := path.Join(fixturePath, "config-mysql.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
@@ -68,7 +69,7 @@ var _ = Describe("Mci", func() {
 		Describe("when database service is postgres", func() {
 			It("should update config file for mattermost to consider right port and postgres service found by tag", func() {
 				var expectedMattermostConfig *MattermostConfig
-				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[\"postgres\"]}]}")
+				os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"postgres://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"adb-mattermost\",\"plan\":\"spark\",\"tags\":[\"postgres\"]}]}")
 				expectedConfigPath := path.Join(fixturePath, "config-postgres.json")
 				expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
 				Expect(err).NotTo(HaveOccurred(), "Problem during loading expected json")
@@ -115,13 +116,13 @@ var _ = Describe("Mci", func() {
 				Expect(err).NotTo(HaveOccurred())
 				err = CloudifyConfig(config)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("Cannot find database"))
+				Expect(err.Error()).To(ContainSubstring("Cannot find"))
 			})
 		})
 		Describe("when there a smtp service", func() {
 			Context("with a sendgrid smtp provided", func() {
 				It("should fill information about the sendgrid smtp server", func() {
-					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"sendgrid\":[{\"credentials\":{\"hostname\":\"smtp.host.com\",\"password\":\"password\",\"username\":\"user\"},\"label\":\"sendgrid\",\"name\":\"test-sendgrid\",\"plan\":\"free\",\"provider\":null,\"syslog_drain_url\":null,\"tags\":[\"Retail\",\"Email\",\"smtp\",\"Inventorymanagement\"]}]}")
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"sendgrid\":[{\"credentials\":{\"hostname\":\"smtp.sendgrid.com\",\"password\":\"password\",\"username\":\"user\"},\"label\":\"sendgrid\",\"name\":\"test-sendgrid\",\"plan\":\"free\",\"provider\":null,\"syslog_drain_url\":null,\"tags\":[\"Retail\",\"Email\",\"smtp\",\"Inventorymanagement\"]}]}")
 					var expectedMattermostConfig *MattermostConfig
 					expectedConfigPath := path.Join(fixturePath, "config-smtp-sendgrid.json")
 					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)
@@ -169,7 +170,7 @@ var _ = Describe("Mci", func() {
 
 			Context("with an cloudfoundry-community/s3-cf-service-broker", func() {
 				It("should fill information about the s3 server", func() {
-					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"username\":\"a-user\",\"access_key_id\":\"BU8FRUIT\",\"bucket\":\"service-instance\",\"secret_access_key\":\"MGB8A==\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"s3\"]}]}")
+					os.Setenv("VCAP_SERVICES", "{\"cleardb\":[{\"credentials\":{\"uri\":\"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true\"},\"label\":\"cleardb\",\"name\":\"mysql-mattermost\",\"plan\":\"spark\",\"tags\":[]}], \"p-riakcs\":[{\"credentials\":{\"access_key_id\":\"BU8FRUIT\",\"bucket\":\"service-instance\",\"secret_access_key\":\"MGB8A==\"},\"label\":\"p-riakcs\",\"name\":\"riak-service-db-dumper\",\"plan\":\"developer\",\"tags\":[\"s3\"]}]}")
 					var expectedMattermostConfig *MattermostConfig
 					expectedConfigPath := path.Join(fixturePath, "config-s3-amazon-broker.json")
 					expectedMattermostConfig, err := ExtractConfig(expectedConfigPath)

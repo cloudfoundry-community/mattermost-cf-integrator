@@ -81,7 +81,7 @@
     "SMTPUsername": "user",
     "SMTPPassword": "password",
     "SMTPServer": "smtp.host.com",
-    "SMTPPort": "25",
+    "SMTPPort": "587",
     "ConnectionSecurity": "",
     "InviteSalt": "bjlSR4QqkXFBr7TP4oDzlfZmcNuH9YoS",
     "PasswordResetSalt": "vZ4DcKyVVRlKHHJpexcuXzojkE5PZ5eL",

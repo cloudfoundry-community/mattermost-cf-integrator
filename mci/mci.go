@@ -4,8 +4,12 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"os"
-	"github.com/cloudfoundry-community/go-cfenv"
 	"errors"
+	"strings"
+	"github.com/cloudfoundry-community/gautocloud/loader"
+	"log"
+	"github.com/cloudfoundry-community/gautocloud/logger"
+	"github.com/cloudfoundry-community/gautocloud"
 )
 
 func PushConfig(mattermostConfig *MattermostConfig, configFilePath string) error {
@@ -17,12 +21,16 @@ func PushConfig(mattermostConfig *MattermostConfig, configFilePath string) error
 	return nil
 }
 func CloudifyConfig(mattermostConfig *MattermostConfig) error {
+	ld := loader.NewLoaderWithLogger(
+		gautocloud.CloudEnvs(),
+		log.New(os.Stdout, "", log.Ldate | log.Ltime),
+		logger.Lall,
+	)
 	var err error
-	if !IsInCloudFoundry() {
-		return errors.New("Not in Cloud Foundry environment.")
+	if !ld.IsInACloudEnv() {
+		return errors.New("Not in any cloud environment.")
 	}
 	mattermostConfig.ServiceSettings.ListenAddress = ":" + os.Getenv("PORT")
-	appEnv, err := cfenv.Current()
 	if err != nil {
 		return err
 	}
@@ -32,28 +40,21 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	if mattermostConfig.ServiceSettings.WebsocketSecurePort == 0 {
 		mattermostConfig.ServiceSettings.WebsocketSecurePort = 443
 	}
-	err = cloudifyDatabase(appEnv, mattermostConfig)
+	err = cloudifyDatabase(ld, mattermostConfig)
 	if err != nil {
 		return err
 	}
-	err = cloudifySmtp(appEnv, mattermostConfig)
-	if err != nil {
+	err = cloudifySmtp(ld, mattermostConfig)
+	if err != nil  && !strings.Contains(err.Error(), "cannot be found") {
 		return err
 	}
-	err = cloudifyS3(appEnv, mattermostConfig)
-	if err != nil {
+	err = cloudifyS3(ld, mattermostConfig)
+	if err != nil && !strings.Contains(err.Error(), "cannot be found") {
 		return err
 	}
 	return nil
 }
 
-func IsInCloudFoundry() bool {
-	d := os.Getenv("VCAP_APPLICATION")
-	if d != "" {
-		return true
-	}
-	return false
-}
 func ExtractConfig(configFilePath string) (*MattermostConfig, error) {
 	var err error
 	var mattermostConfig MattermostConfig

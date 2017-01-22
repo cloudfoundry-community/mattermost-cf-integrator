@@ -80,7 +80,7 @@
     "FeedbackEmail": "",
     "SMTPUsername": "user",
     "SMTPPassword": "password",
-    "SMTPServer": "smtp.host.com",
+    "SMTPServer": "smtp.sendgrid.com",
     "SMTPPort": "587",
     "ConnectionSecurity": "STARTTLS",
     "InviteSalt": "bjlSR4QqkXFBr7TP4oDzlfZmcNuH9YoS",
