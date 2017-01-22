@@ -124,3 +124,4 @@ Now, you can (re)deploy your mattermost: `$ cf push mattermost`
 
 
 [1]: https://github.com/cloudfoundry-community/mattermost-cf-integrator/releases
+
