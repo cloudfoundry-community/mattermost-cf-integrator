@@ -24,7 +24,7 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	ld := loader.NewLoaderWithLogger(
 		gautocloud.CloudEnvs(),
 		log.New(os.Stdout, "", log.Ldate | log.Ltime),
-		logger.Lall,
+		logger.Linfo,
 	)
 	var err error
 	if !ld.IsInACloudEnv() {
