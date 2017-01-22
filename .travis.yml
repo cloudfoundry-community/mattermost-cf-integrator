@@ -1,6 +1,6 @@
 language: go
 go:
-- 1.6.2
+- 1.7.x
 install:
 - go get -v github.com/golang/protobuf/proto
 - go get -v -d ./...
