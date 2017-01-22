@@ -351,6 +351,7 @@ func (l *Loader) load(connector connectors.Connector) []StoredService {
 			connector.Name(),
 			strings.Join(connector.Tags(), ", "),
 		)
+		l.logger.Info("Connector '%s' didn't load any services. (No service match the connector, run in debug mode for more informations)", connector.Id())
 		return storedServices
 	}
 	serviceType := reflect.TypeOf(connector.Schema())
@@ -375,6 +376,7 @@ func (l *Loader) load(connector connectors.Connector) []StoredService {
 			Data: loadedService,
 		})
 	}
+	l.logger.Info("Connector '%s' load %d services", connector.Id(), len(storedServices))
 	return storedServices
 }
 func (l Loader) addService(services []cloudenv.Service, toAdd ...cloudenv.Service) []cloudenv.Service {
