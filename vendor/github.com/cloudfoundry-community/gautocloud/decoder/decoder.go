@@ -6,7 +6,8 @@
 //  	Name    string `cloud:"name"`           // note: by default if you don't provide a cloud tag the key will be the field name in snake_case
 //  	Uri     decoder.ServiceUri              // ServiceUri is a special type. Decoder will expect an uri as a value and will give a ServiceUri
 //  	User    string `cloud:".*user.*,regex"` // by passing `regex` in cloud tag it will say to decoder that the expected key must be match the regex
-//  	Pasword string `cloud:".*user.*,regex,default=apassword"` // by passing `default=avalue` decoder will understand that if the key is not found it must fill the field with this value
+//  	Password string `cloud:".*user.*,regex,default=apassword"` // by passing `default=avalue` decoder will understand that if the key is not found it must fill the field with this value
+//      Aslice   []string `cloud:"aslice,default=value1,value2"` // you can also pass a slice
 //  }
 package decoder
 
@@ -51,7 +52,10 @@ type QueryUri struct {
 
 // Decode a map of credentials into a reflected Value
 func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Value) error {
-	v := ps.Elem()
+	v := ps
+	if ps.Kind() == reflect.Ptr {
+		v = ps.Elem()
+	}
 	t := v.Type()
 	var err error
 	for index := 0; index < v.NumField(); index++ {
@@ -81,7 +85,7 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 		if dataKind == reflect.String {
 			data, err = convertStringValue(data.(string), vField)
 			if err != nil {
-				return errors.New(fmt.Sprintf(
+				return NewErrDecode(fmt.Sprintf(
 					"Error on field '%s' when trying to convert value '%s' in '%s': %s",
 					tField.Name,
 					tag.DefaultValue,
@@ -92,7 +96,7 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 		}
 		err = affect(data, vField)
 		if err != nil {
-			return errors.New(fmt.Sprintf("Error on field '%s': %s", tField.Name, err.Error()))
+			return NewErrDecode(fmt.Sprintf("Error on field '%s': %s", tField.Name, err.Error()))
 		}
 	}
 	return nil
@@ -102,40 +106,63 @@ func Unmarshal(serviceCredentials map[string]interface{}, obj interface{}) error
 	ps := reflect.ValueOf(obj)
 	return UnmarshalToValue(serviceCredentials, ps)
 }
+func parseFloat(data interface{}, vField reflect.Value) interface{} {
+	if reflect.ValueOf(data).Kind() != reflect.Float32 && reflect.ValueOf(data).Kind() != reflect.Float64 {
+		return data
+	}
+	if reflect.ValueOf(data).Kind() == reflect.Float32 {
+		val, _ := convertStringValue(fmt.Sprintf("%.0f", data.(float32)), vField)
+		return val
+	}
+	val, _ := convertStringValue(fmt.Sprintf("%.0f", data.(float64)), vField)
+	return val
+}
 func affect(data interface{}, vField reflect.Value) error {
 	switch vField.Kind() {
 	case reflect.String:
 		vField.SetString(data.(string))
 		break
 	case reflect.Int:
-		vField.SetInt(int64(data.(int)))
+		vField.SetInt(int64(parseFloat(data, vField).(int)))
 		break
 	case reflect.Int8:
-		vField.SetInt(int64(data.(int8)))
+		vField.SetInt(int64(parseFloat(data, vField).(int8)))
 		break
 	case reflect.Int16:
-		vField.SetInt(int64(data.(int16)))
+		vField.SetInt(int64(parseFloat(data, vField).(int16)))
 		break
 	case reflect.Int32:
-		vField.SetInt(int64(data.(int32)))
+		vField.SetInt(int64(parseFloat(data, vField).(int32)))
 		break
 	case reflect.Int64:
-		vField.SetInt(data.(int64))
+		vField.SetInt(parseFloat(data, vField).(int64))
 		break
 	case reflect.Uint:
-		vField.SetUint(uint64(data.(uint)))
+		vField.SetUint(uint64(parseFloat(data, vField).(uint)))
 		break
 	case reflect.Uint8:
-		vField.SetUint(uint64(data.(uint8)))
+		vField.SetUint(uint64(parseFloat(data, vField).(uint8)))
 		break
 	case reflect.Uint16:
-		vField.SetUint(uint64(data.(uint16)))
+		vField.SetUint(uint64(parseFloat(data, vField).(uint16)))
 		break
 	case reflect.Uint32:
-		vField.SetUint(uint64(data.(uint32)))
+		vField.SetUint(uint64(parseFloat(data, vField).(uint32)))
 		break
 	case reflect.Uint64:
-		vField.SetUint(data.(uint64))
+		vField.SetUint(parseFloat(data, vField).(uint64))
+		break
+	case reflect.Slice:
+		if vField.IsNil() {
+			vField.Set(reflect.MakeSlice(reflect.SliceOf(vField.Type().Elem()), 0, 0))
+		}
+		if reflect.ValueOf(data).Kind() != reflect.Slice {
+			return errors.New(fmt.Sprintf("Type '%s' have not receive a slice.", vField.String()))
+		}
+		dataValue := reflect.ValueOf(data)
+		for i := 0; i < dataValue.Len(); i++ {
+			vField.Set(reflect.Append(vField, dataValue.Index(i)))
+		}
 		break
 	case reflect.Interface:
 		vField.Set(reflect.ValueOf(data))
@@ -160,8 +187,11 @@ func affect(data interface{}, vField reflect.Value) error {
 		break
 	default:
 		servUriType := reflect.TypeOf(ServiceUri{})
-		if vField.Type() != servUriType {
-			return errors.New(fmt.Sprintf("Type '%s' is not supported", vField.Type().String()))
+		if vField.Type() != servUriType && reflect.TypeOf(data) != reflect.TypeOf(make(map[string]interface{})) {
+			return NewErrTypeNotSupported(vField)
+		}
+		if reflect.TypeOf(data) == reflect.TypeOf(make(map[string]interface{})) {
+			return UnmarshalToValue(data.(map[string]interface{}), vField)
 		}
 		serviceUrl, err := url.Parse(data.(string))
 		if err != nil {
@@ -352,6 +382,17 @@ func convertStringValue(defVal string, vField reflect.Value) (interface{}, error
 			return "", err
 		}
 		return float64(val), nil
+	case reflect.Slice:
+		finalField := reflect.MakeSlice(reflect.SliceOf(vField.Type().Elem()), 0, 0)
+		defValSlice := strings.Split(defVal, ",")
+		for _, aDefVal := range defValSlice {
+			finDefVal, err := convertStringValue(strings.TrimSpace(aDefVal), reflect.New(vField.Type().Elem()))
+			if err != nil {
+				return "", err
+			}
+			finalField = reflect.Append(finalField, reflect.ValueOf(finDefVal))
+		}
+		return finalField.Interface(), nil
 	case reflect.Ptr:
 		if vField.IsNil() {
 			vField.Set(reflect.New(vField.Type().Elem()))
@@ -360,9 +401,9 @@ func convertStringValue(defVal string, vField reflect.Value) (interface{}, error
 	default:
 		servUriType := reflect.TypeOf(ServiceUri{})
 		if vField.Type() != servUriType {
-			return "", errors.New(fmt.Sprintf("Type %s is not supported", vField.Type().String()))
+			return "", NewErrTypeNotSupported(vField)
 		}
 		return defVal, nil
 	}
-	return "", errors.New(fmt.Sprintf("Type %s is not supported", vField.Type().String()))
+	return "", NewErrTypeNotSupported(vField)
 }
