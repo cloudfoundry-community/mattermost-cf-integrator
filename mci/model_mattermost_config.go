@@ -1,262 +1,345 @@
 package mci
 
+type ServiceSettings struct {
+	SiteURL                                  string
+	LicenseFileLocation                      string
+	ListenAddress                            string
+	ConnectionSecurity                       string
+	TLSCertFile                              string
+	TLSKeyFile                               string
+	UseLetsEncrypt                           bool
+	LetsEncryptCertificateCacheFile          string
+	Forward80To443                           bool
+	ReadTimeout                              int
+	WriteTimeout                             int
+	MaximumLoginAttempts                     int
+	GoroutineHealthThreshold                 int
+	GoogleDeveloperKey                       string
+	EnableOAuthServiceProvider               bool
+	EnableIncomingWebhooks                   bool
+	EnableOutgoingWebhooks                   bool
+	EnableCommands                           bool
+	EnableOnlyAdminIntegrations              bool
+	EnablePostUsernameOverride               bool
+	EnablePostIconOverride                   bool
+	EnableAPIv3                              bool
+	EnableLinkPreviews                       bool
+	EnableTesting                            bool
+	EnableDeveloper                          bool
+	EnableSecurityFixAlert                   bool
+	EnableInsecureOutgoingConnections        bool
+	EnableMultifactorAuthentication          bool
+	EnforceMultifactorAuthentication         bool
+	AllowCorsFrom                            string
+	SessionLengthWebInDays                   int
+	SessionLengthMobileInDays                int
+	SessionLengthSSOInDays                   int
+	SessionCacheInMinutes                    int
+	WebsocketSecurePort                      int
+	WebsocketPort                            int
+	WebserverMode                            string
+	EnableCustomEmoji                        bool
+	EnableEmojiPicker                        bool
+	RestrictCustomEmojiCreation              string
+	RestrictPostDelete                       string
+	AllowEditPost                            string
+	PostEditTimeLimit                        int
+	TimeBetweenUserTypingUpdatesMilliseconds int64
+	EnablePostSearch                         bool
+	EnableUserTypingMessages                 bool
+	EnableChannelViewedMessages              bool
+	EnableUserStatuses                       bool
+	ClusterLogTimeoutMilliseconds            int
+}
+
+type ClusterSettings struct {
+	Enable                bool
+	ClusterName           string
+	OverrideHostname      string
+	UseIpAddress          bool
+	UseExperimentalGossip bool
+	ReadOnlyConfig        bool
+	GossipPort            int
+	StreamingPort         int
+}
+
+type MetricsSettings struct {
+	Enable           bool
+	BlockProfileRate int
+	ListenAddress    string
+}
+
+type AnalyticsSettings struct {
+	MaxUsersForStatistics int
+}
+
+type SSOSettings struct {
+	Enable          bool
+	Secret          string
+	Id              string
+	Scope           string
+	AuthEndpoint    string
+	TokenEndpoint   string
+	UserApiEndpoint string
+}
+
+type SqlSettings struct {
+	DriverName               string
+	DataSource               string
+	DataSourceReplicas       []string
+	DataSourceSearchReplicas []string
+	MaxIdleConns             int
+	MaxOpenConns             int
+	Trace                    bool
+	AtRestEncryptKey         string
+	QueryTimeout             int
+}
+
+type LogSettings struct {
+	EnableConsole          bool
+	ConsoleLevel           string
+	EnableFile             bool
+	FileLevel              string
+	FileFormat             string
+	FileLocation           string
+	EnableWebhookDebugging bool
+	EnableDiagnostics      bool
+}
+
+type PasswordSettings struct {
+	MinimumLength int
+	Lowercase     bool
+	Number        bool
+	Uppercase     bool
+	Symbol        bool
+}
+
+type FileSettings struct {
+	EnableFileAttachments   bool
+	MaxFileSize             int64
+	DriverName              string
+	Directory               string
+	EnablePublicLink        bool
+	PublicLinkSalt          string
+	InitialFont             string
+	AmazonS3AccessKeyId     string
+	AmazonS3SecretAccessKey string
+	AmazonS3Bucket          string
+	AmazonS3Region          string
+	AmazonS3Endpoint        string
+	AmazonS3SSL             bool
+	AmazonS3SignV2          bool
+}
+
+type EmailSettings struct {
+	EnableSignUpWithEmail             bool
+	EnableSignInWithEmail             bool
+	EnableSignInWithUsername          bool
+	SendEmailNotifications            bool
+	RequireEmailVerification          bool
+	FeedbackName                      string
+	FeedbackEmail                     string
+	FeedbackOrganization              string
+	SMTPUsername                      string
+	SMTPPassword                      string
+	SMTPServer                        string
+	SMTPPort                          string
+	ConnectionSecurity                string
+	InviteSalt                        string
+	SendPushNotifications             bool
+	PushNotificationServer            string
+	PushNotificationContents          string
+	EnableEmailBatching               bool
+	EmailBatchingBufferSize           int
+	EmailBatchingInterval             int
+	SkipServerCertificateVerification bool
+}
+
+type RateLimitSettings struct {
+	Enable           bool
+	PerSec           int
+	MaxBurst         int
+	MemoryStoreSize  int
+	VaryByRemoteAddr bool
+	VaryByHeader     string
+}
+
+type PrivacySettings struct {
+	ShowEmailAddress bool
+	ShowFullName     bool
+}
+
+type SupportSettings struct {
+	TermsOfServiceLink       string
+	PrivacyPolicyLink        string
+	AboutLink                string
+	HelpLink                 string
+	ReportAProblemLink       string
+	AdministratorsGuideLink  string
+	TroubleshootingForumLink string
+	CommercialSupportLink    string
+	SupportEmail             string
+}
+
+type AnnouncementSettings struct {
+	EnableBanner         bool
+	BannerText           string
+	BannerColor          string
+	BannerTextColor      string
+	AllowBannerDismissal bool
+}
+
+type TeamSettings struct {
+	SiteName                            string
+	MaxUsersPerTeam                     int
+	EnableTeamCreation                  bool
+	EnableUserCreation                  bool
+	EnableOpenServer                    bool
+	RestrictCreationToDomains           string
+	EnableCustomBrand                   bool
+	CustomBrandText                     string
+	CustomDescriptionText               string
+	RestrictDirectMessage               string
+	RestrictTeamInvite                  string
+	RestrictPublicChannelManagement     string
+	RestrictPrivateChannelManagement    string
+	RestrictPublicChannelCreation       string
+	RestrictPrivateChannelCreation      string
+	RestrictPublicChannelDeletion       string
+	RestrictPrivateChannelDeletion      string
+	RestrictPrivateChannelManageMembers string
+	UserStatusAwayTimeout               int64
+	MaxChannelsPerTeam                  int64
+	MaxNotificationsPerChannel          int64
+	TeammateNameDisplay                 string
+}
+
+type LdapSettings struct {
+	// Basic
+	Enable             bool
+	LdapServer         string
+	LdapPort           int
+	ConnectionSecurity string
+	BaseDN             string
+	BindUsername       string
+	BindPassword       string
+
+	// Filtering
+	UserFilter string
+
+	// User Mapping
+	FirstNameAttribute string
+	LastNameAttribute  string
+	EmailAttribute     string
+	UsernameAttribute  string
+	NicknameAttribute  string
+	IdAttribute        string
+	PositionAttribute  string
+
+	// Syncronization
+	SyncIntervalMinutes int
+
+	// Advanced
+	SkipCertificateVerification bool
+	QueryTimeout                int
+	MaxPageSize                 int
+
+	// Customization
+	LoginFieldName string
+}
+
+type ComplianceSettings struct {
+	Enable      bool
+	Directory   string
+	EnableDaily bool
+}
+
+type LocalizationSettings struct {
+	DefaultServerLocale string
+	DefaultClientLocale string
+	AvailableLocales    string
+}
+
+type SamlSettings struct {
+	// Basic
+	Enable  bool
+	Verify  bool
+	Encrypt bool
+
+	IdpUrl                      string
+	IdpDescriptorUrl            string
+	AssertionConsumerServiceURL string
+
+	IdpCertificateFile    string
+	PublicCertificateFile string
+	PrivateKeyFile        string
+
+	// User Mapping
+	FirstNameAttribute string
+	LastNameAttribute  string
+	EmailAttribute     string
+	UsernameAttribute  string
+	NicknameAttribute  string
+	LocaleAttribute    string
+	PositionAttribute  string
+
+	LoginButtonText string
+}
+
+type NativeAppSettings struct {
+	AppDownloadLink        string
+	AndroidAppDownloadLink string
+	IosAppDownloadLink     string
+}
+
+type WebrtcSettings struct {
+	Enable              bool
+	GatewayWebsocketUrl string
+	GatewayAdminUrl     string
+	GatewayAdminSecret  string
+	StunURI             string
+	TurnURI             string
+	TurnUsername        string
+	TurnSharedKey       string
+}
+
+type ElasticSearchSettings struct {
+	ConnectionUrl   string
+	Username        string
+	Password        string
+	EnableIndexing  bool
+	EnableSearching bool
+	Sniff           bool
+}
+
+type DataRetentionSettings struct {
+	Enable bool
+}
+
 type MattermostConfig struct {
-	ServiceSettings      struct {
-				     SiteURL                           string `json:"SiteURL"`
-				     ListenAddress                     string `json:"ListenAddress"`
-				     ConnectionSecurity                string `json:"ConnectionSecurity"`
-				     TLSCertFile                       string `json:"TLSCertFile"`
-				     TLSKeyFile                        string `json:"TLSKeyFile"`
-				     UseLetsEncrypt                    bool `json:"UseLetsEncrypt"`
-				     LetsEncryptCertificateCacheFile   string `json:"LetsEncryptCertificateCacheFile"`
-				     Forward80To443                    bool `json:"Forward80To443"`
-				     ReadTimeout                       int `json:"ReadTimeout"`
-				     WriteTimeout                      int `json:"WriteTimeout"`
-				     MaximumLoginAttempts              int `json:"MaximumLoginAttempts"`
-				     SegmentDeveloperKey               string `json:"SegmentDeveloperKey"`
-				     GoogleDeveloperKey                string `json:"GoogleDeveloperKey"`
-				     EnableOAuthServiceProvider        bool `json:"EnableOAuthServiceProvider"`
-				     EnableIncomingWebhooks            bool `json:"EnableIncomingWebhooks"`
-				     EnableOutgoingWebhooks            bool `json:"EnableOutgoingWebhooks"`
-				     EnableCommands                    bool `json:"EnableCommands"`
-				     EnableOnlyAdminIntegrations       bool `json:"EnableOnlyAdminIntegrations"`
-				     EnablePostUsernameOverride        bool `json:"EnablePostUsernameOverride"`
-				     EnablePostIconOverride            bool `json:"EnablePostIconOverride"`
-				     EnableTesting                     bool `json:"EnableTesting"`
-				     EnableDeveloper                   bool `json:"EnableDeveloper"`
-				     EnableSecurityFixAlert            bool `json:"EnableSecurityFixAlert"`
-				     EnableInsecureOutgoingConnections bool `json:"EnableInsecureOutgoingConnections"`
-				     EnableMultifactorAuthentication   bool `json:"EnableMultifactorAuthentication"`
-				     EnforceMultifactorAuthentication  bool `json:"EnforceMultifactorAuthentication"`
-				     AllowCorsFrom                     string `json:"AllowCorsFrom"`
-				     SessionLengthWebInDays            int `json:"SessionLengthWebInDays"`
-				     SessionLengthMobileInDays         int `json:"SessionLengthMobileInDays"`
-				     SessionLengthSSOInDays            int `json:"SessionLengthSSOInDays"`
-				     SessionCacheInMinutes             int `json:"SessionCacheInMinutes"`
-				     WebsocketSecurePort               int `json:"WebsocketSecurePort"`
-				     WebsocketPort                     int `json:"WebsocketPort"`
-				     WebserverMode                     string `json:"WebserverMode"`
-				     EnableCustomEmoji                 bool `json:"EnableCustomEmoji"`
-				     RestrictCustomEmojiCreation       string `json:"RestrictCustomEmojiCreation"`
-				     RestrictPostDelete                string `json:"RestrictPostDelete"`
-				     AllowEditPost                     string `json:"AllowEditPost"`
-				     PostEditTimeLimit                 int `json:"PostEditTimeLimit"`
-			     } `json:"ServiceSettings"`
-	TeamSettings         struct {
-				     SiteName                         string `json:"SiteName"`
-				     MaxUsersPerTeam                  int `json:"MaxUsersPerTeam"`
-				     EnableTeamCreation               bool `json:"EnableTeamCreation"`
-				     EnableUserCreation               bool `json:"EnableUserCreation"`
-				     EnableOpenServer                 bool `json:"EnableOpenServer"`
-				     RestrictCreationToDomains        string `json:"RestrictCreationToDomains"`
-				     EnableCustomBrand                bool `json:"EnableCustomBrand"`
-				     CustomBrandText                  string `json:"CustomBrandText"`
-				     CustomDescriptionText            string `json:"CustomDescriptionText"`
-				     RestrictDirectMessage            string `json:"RestrictDirectMessage"`
-				     RestrictTeamInvite               string `json:"RestrictTeamInvite"`
-				     RestrictPublicChannelCreation    string `json:"RestrictPublicChannelCreation"`
-				     RestrictPrivateChannelCreation   string `json:"RestrictPrivateChannelCreation"`
-				     RestrictPublicChannelManagement  string `json:"RestrictPublicChannelManagement"`
-				     RestrictPrivateChannelManagement string `json:"RestrictPrivateChannelManagement"`
-				     RestrictPublicChannelDeletion    string `json:"RestrictPublicChannelDeletion"`
-				     RestrictPrivateChannelDeletion   string `json:"RestrictPrivateChannelDeletion"`
-				     UserStatusAwayTimeout            int `json:"UserStatusAwayTimeout"`
-				     MaxChannelsPerTeam               int `json:"MaxChannelsPerTeam"`
-				     MaxNotificationsPerChannel       int `json:"MaxNotificationsPerChannel"`
-			     } `json:"TeamSettings"`
-	SqlSettings          struct {
-				     DriverName         string `json:"DriverName"`
-				     DataSource         string `json:"DataSource"`
-				     DataSourceReplicas []interface{} `json:"DataSourceReplicas"`
-				     MaxIdleConns       int `json:"MaxIdleConns"`
-				     MaxOpenConns       int `json:"MaxOpenConns"`
-				     Trace              bool `json:"Trace"`
-				     AtRestEncryptKey   string `json:"AtRestEncryptKey"`
-			     } `json:"SqlSettings"`
-	LogSettings          struct {
-				     EnableConsole          bool `json:"EnableConsole"`
-				     ConsoleLevel           string `json:"ConsoleLevel"`
-				     EnableFile             bool `json:"EnableFile"`
-				     FileLevel              string `json:"FileLevel"`
-				     FileFormat             string `json:"FileFormat"`
-				     FileLocation           string `json:"FileLocation"`
-				     EnableWebhookDebugging bool `json:"EnableWebhookDebugging"`
-				     EnableDiagnostics      bool `json:"EnableDiagnostics"`
-			     } `json:"LogSettings"`
-	PasswordSettings     struct {
-				     MinimumLength int `json:"MinimumLength"`
-				     Lowercase     bool `json:"Lowercase"`
-				     Number        bool `json:"Number"`
-				     Uppercase     bool `json:"Uppercase"`
-				     Symbol        bool `json:"Symbol"`
-			     } `json:"PasswordSettings"`
-	FileSettings         struct {
-				     MaxFileSize             int `json:"MaxFileSize"`
-				     DriverName              string `json:"DriverName"`
-				     Directory               string `json:"Directory"`
-				     EnablePublicLink        bool `json:"EnablePublicLink"`
-				     PublicLinkSalt          string `json:"PublicLinkSalt"`
-				     ThumbnailWidth          int `json:"ThumbnailWidth"`
-				     ThumbnailHeight         int `json:"ThumbnailHeight"`
-				     PreviewWidth            int `json:"PreviewWidth"`
-				     PreviewHeight           int `json:"PreviewHeight"`
-				     ProfileWidth            int `json:"ProfileWidth"`
-				     ProfileHeight           int `json:"ProfileHeight"`
-				     InitialFont             string `json:"InitialFont"`
-				     AmazonS3AccessKeyID     string `json:"AmazonS3AccessKeyId"`
-				     AmazonS3SecretAccessKey string `json:"AmazonS3SecretAccessKey"`
-				     AmazonS3Bucket          string `json:"AmazonS3Bucket"`
-				     AmazonS3Region          string `json:"AmazonS3Region"`
-				     AmazonS3Endpoint        string `json:"AmazonS3Endpoint"`
-				     AmazonS3SSL             bool `json:"AmazonS3SSL"`
-			     } `json:"FileSettings"`
-	EmailSettings        struct {
-				     EnableSignUpWithEmail    bool `json:"EnableSignUpWithEmail"`
-				     EnableSignInWithEmail    bool `json:"EnableSignInWithEmail"`
-				     EnableSignInWithUsername bool `json:"EnableSignInWithUsername"`
-				     SendEmailNotifications   bool `json:"SendEmailNotifications"`
-				     RequireEmailVerification bool `json:"RequireEmailVerification"`
-				     FeedbackName             string `json:"FeedbackName"`
-				     FeedbackEmail            string `json:"FeedbackEmail"`
-				     FeedbackOrganization     string `json:"FeedbackOrganization"`
-				     SMTPUsername             string `json:"SMTPUsername"`
-				     SMTPPassword             string `json:"SMTPPassword"`
-				     SMTPServer               string `json:"SMTPServer"`
-				     SMTPPort                 string `json:"SMTPPort"`
-				     ConnectionSecurity       string `json:"ConnectionSecurity"`
-				     InviteSalt               string `json:"InviteSalt"`
-				     PasswordResetSalt        string `json:"PasswordResetSalt"`
-				     SendPushNotifications    bool `json:"SendPushNotifications"`
-				     PushNotificationServer   string `json:"PushNotificationServer"`
-				     PushNotificationContents string `json:"PushNotificationContents"`
-				     EnableEmailBatching      bool `json:"EnableEmailBatching"`
-				     EmailBatchingBufferSize  int `json:"EmailBatchingBufferSize"`
-				     EmailBatchingInterval    int `json:"EmailBatchingInterval"`
-			     } `json:"EmailSettings"`
-	RateLimitSettings    struct {
-				     Enable           bool `json:"Enable"`
-				     PerSec           int `json:"PerSec"`
-				     MaxBurst         int `json:"MaxBurst"`
-				     MemoryStoreSize  int `json:"MemoryStoreSize"`
-				     VaryByRemoteAddr bool `json:"VaryByRemoteAddr"`
-				     VaryByHeader     string `json:"VaryByHeader"`
-			     } `json:"RateLimitSettings"`
-	PrivacySettings      struct {
-				     ShowEmailAddress bool `json:"ShowEmailAddress"`
-				     ShowFullName     bool `json:"ShowFullName"`
-			     } `json:"PrivacySettings"`
-	SupportSettings      struct {
-				     TermsOfServiceLink string `json:"TermsOfServiceLink"`
-				     PrivacyPolicyLink  string `json:"PrivacyPolicyLink"`
-				     AboutLink          string `json:"AboutLink"`
-				     HelpLink           string `json:"HelpLink"`
-				     ReportAProblemLink string `json:"ReportAProblemLink"`
-				     SupportEmail       string `json:"SupportEmail"`
-			     } `json:"SupportSettings"`
-	GitLabSettings       struct {
-				     Enable          bool `json:"Enable"`
-				     Secret          string `json:"Secret"`
-				     ID              string `json:"Id"`
-				     Scope           string `json:"Scope"`
-				     AuthEndpoint    string `json:"AuthEndpoint"`
-				     TokenEndpoint   string `json:"TokenEndpoint"`
-				     UserAPIEndpoint string `json:"UserApiEndpoint"`
-			     } `json:"GitLabSettings"`
-	GoogleSettings       struct {
-				     Enable          bool `json:"Enable"`
-				     Secret          string `json:"Secret"`
-				     ID              string `json:"Id"`
-				     Scope           string `json:"Scope"`
-				     AuthEndpoint    string `json:"AuthEndpoint"`
-				     TokenEndpoint   string `json:"TokenEndpoint"`
-				     UserAPIEndpoint string `json:"UserApiEndpoint"`
-			     } `json:"GoogleSettings"`
-	Office365Settings    struct {
-				     Enable          bool `json:"Enable"`
-				     Secret          string `json:"Secret"`
-				     ID              string `json:"Id"`
-				     Scope           string `json:"Scope"`
-				     AuthEndpoint    string `json:"AuthEndpoint"`
-				     TokenEndpoint   string `json:"TokenEndpoint"`
-				     UserAPIEndpoint string `json:"UserApiEndpoint"`
-			     } `json:"Office365Settings"`
-	LdapSettings         struct {
-				     Enable                      bool `json:"Enable"`
-				     LdapServer                  string `json:"LdapServer"`
-				     LdapPort                    int `json:"LdapPort"`
-				     ConnectionSecurity          string `json:"ConnectionSecurity"`
-				     BaseDN                      string `json:"BaseDN"`
-				     BindUsername                string `json:"BindUsername"`
-				     BindPassword                string `json:"BindPassword"`
-				     UserFilter                  string `json:"UserFilter"`
-				     FirstNameAttribute          string `json:"FirstNameAttribute"`
-				     LastNameAttribute           string `json:"LastNameAttribute"`
-				     EmailAttribute              string `json:"EmailAttribute"`
-				     UsernameAttribute           string `json:"UsernameAttribute"`
-				     NicknameAttribute           string `json:"NicknameAttribute"`
-				     IDAttribute                 string `json:"IdAttribute"`
-				     PositionAttribute           string `json:"PositionAttribute"`
-				     SyncIntervalMinutes         int `json:"SyncIntervalMinutes"`
-				     SkipCertificateVerification bool `json:"SkipCertificateVerification"`
-				     QueryTimeout                int `json:"QueryTimeout"`
-				     MaxPageSize                 int `json:"MaxPageSize"`
-				     LoginFieldName              string `json:"LoginFieldName"`
-			     } `json:"LdapSettings"`
-	ComplianceSettings   struct {
-				     Enable      bool `json:"Enable"`
-				     Directory   string `json:"Directory"`
-				     EnableDaily bool `json:"EnableDaily"`
-			     } `json:"ComplianceSettings"`
-	LocalizationSettings struct {
-				     DefaultServerLocale string `json:"DefaultServerLocale"`
-				     DefaultClientLocale string `json:"DefaultClientLocale"`
-				     AvailableLocales    string `json:"AvailableLocales"`
-			     } `json:"LocalizationSettings"`
-	SamlSettings         struct {
-				     Enable                      bool `json:"Enable"`
-				     Verify                      bool `json:"Verify"`
-				     Encrypt                     bool `json:"Encrypt"`
-				     IdpURL                      string `json:"IdpUrl"`
-				     IdpDescriptorURL            string `json:"IdpDescriptorUrl"`
-				     AssertionConsumerServiceURL string `json:"AssertionConsumerServiceURL"`
-				     IdpCertificateFile          string `json:"IdpCertificateFile"`
-				     PublicCertificateFile       string `json:"PublicCertificateFile"`
-				     PrivateKeyFile              string `json:"PrivateKeyFile"`
-				     FirstNameAttribute          string `json:"FirstNameAttribute"`
-				     LastNameAttribute           string `json:"LastNameAttribute"`
-				     EmailAttribute              string `json:"EmailAttribute"`
-				     UsernameAttribute           string `json:"UsernameAttribute"`
-				     NicknameAttribute           string `json:"NicknameAttribute"`
-				     LocaleAttribute             string `json:"LocaleAttribute"`
-				     PositionAttribute           string `json:"PositionAttribute"`
-				     LoginButtonText             string `json:"LoginButtonText"`
-			     } `json:"SamlSettings"`
-	NativeAppSettings    struct {
-				     AppDownloadLink        string `json:"AppDownloadLink"`
-				     AndroidAppDownloadLink string `json:"AndroidAppDownloadLink"`
-				     IosAppDownloadLink     string `json:"IosAppDownloadLink"`
-			     } `json:"NativeAppSettings"`
-	ClusterSettings      struct {
-				     Enable                 bool `json:"Enable"`
-				     InterNodeListenAddress string `json:"InterNodeListenAddress"`
-				     InterNodeUrls          []interface{} `json:"InterNodeUrls"`
-			     } `json:"ClusterSettings"`
-	MetricsSettings      struct {
-				     Enable           bool `json:"Enable"`
-				     BlockProfileRate int `json:"BlockProfileRate"`
-				     ListenAddress    string `json:"ListenAddress"`
-			     } `json:"MetricsSettings"`
-	AnalyticsSettings    struct {
-				     MaxUsersForStatistics int `json:"MaxUsersForStatistics"`
-			     } `json:"AnalyticsSettings"`
-	WebrtcSettings       struct {
-				     Enable              bool `json:"Enable"`
-				     GatewayWebsocketURL string `json:"GatewayWebsocketUrl"`
-				     GatewayAdminURL     string `json:"GatewayAdminUrl"`
-				     GatewayAdminSecret  string `json:"GatewayAdminSecret"`
-				     StunURI             string `json:"StunURI"`
-				     TurnURI             string `json:"TurnURI"`
-				     TurnUsername        string `json:"TurnUsername"`
-				     TurnSharedKey       string `json:"TurnSharedKey"`
-			     } `json:"WebrtcSettings"`
+	ServiceSettings       ServiceSettings
+	TeamSettings          TeamSettings
+	SqlSettings           SqlSettings
+	LogSettings           LogSettings
+	PasswordSettings      PasswordSettings
+	FileSettings          FileSettings
+	EmailSettings         EmailSettings
+	RateLimitSettings     RateLimitSettings
+	PrivacySettings       PrivacySettings
+	SupportSettings       SupportSettings
+	AnnouncementSettings  AnnouncementSettings
+	GitLabSettings        SSOSettings
+	GoogleSettings        SSOSettings
+	Office365Settings     SSOSettings
+	LdapSettings          LdapSettings
+	ComplianceSettings    ComplianceSettings
+	LocalizationSettings  LocalizationSettings
+	SamlSettings          SamlSettings
+	NativeAppSettings     NativeAppSettings
+	ClusterSettings       ClusterSettings
+	MetricsSettings       MetricsSettings
+	AnalyticsSettings     AnalyticsSettings
+	WebrtcSettings        WebrtcSettings
+	ElasticSearchSettings ElasticSearchSettings
+	DataRetentionSettings DataRetentionSettings
 }
