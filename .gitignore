@@ -1,3 +1,6 @@
 /mattermost
 /mattermost-cf-integrator
 /config
+/dist
+
+.DS_Store

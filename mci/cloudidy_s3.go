@@ -1,9 +1,9 @@
 package mci
 
 import (
-	"github.com/cloudfoundry-community/gautocloud/loader"
-	"github.com/cloudfoundry-community/gautocloud/connectors/objstorage/raw"
 	"github.com/cloudfoundry-community/gautocloud/connectors/objstorage/objstoretype"
+	"github.com/cloudfoundry-community/gautocloud/connectors/objstorage/raw"
+	"github.com/cloudfoundry-community/gautocloud/loader"
 	"strconv"
 )
 
@@ -17,7 +17,7 @@ func cloudifyS3(loader *loader.Loader, mattermostConfig *MattermostConfig) error
 		return err
 	}
 	mattermostConfig.FileSettings.DriverName = "amazons3"
-	mattermostConfig.FileSettings.AmazonS3AccessKeyID = svc.AccessKeyID
+	mattermostConfig.FileSettings.AmazonS3AccessKeyId = svc.AccessKeyID
 	mattermostConfig.FileSettings.AmazonS3SecretAccessKey = svc.SecretAccessKey
 	mattermostConfig.FileSettings.AmazonS3Bucket = svc.Bucket
 	endpoint := svc.Host
