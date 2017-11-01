@@ -22,8 +22,7 @@ build:
 
 	rm -Rf $(DIST_ROOT)
 	$(GO) clean $(GOFLAGS) -i ./...
-	$(GO) build $(GOFLAGS)
-	$(GO) install $(GOFLAGS)
+	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS)
 
 package:
 	@ echo Packaging Mattermost integrator
@@ -34,13 +33,13 @@ package:
 	curl https://releases.mattermost.com/$(FINAL_TAG)/mattermost-team-$(FINAL_TAG)-linux-amd64.tar.gz -o $(DIST_ROOT)/mattermost-team.tar.gz
 
 	tar -xvzf $(DIST_ROOT)/mattermost-enterprise.tar.gz -C $(DIST_ROOT)
-	cp $(GOPATH)/bin/mattermost-cf-integrator $(DIST_ROOT)/mattermost
+	cp $(CURDIR)/mattermost-cf-integrator $(DIST_ROOT)/mattermost
 	echo "web: ./mattermost-cf-integrator" > $(DIST_ROOT)/mattermost/Procfile
 	pushd $(DIST_ROOT) && zip -r mattermost-cf-enterprise mattermost/* && popd
 	rm -Rf $(DIST_ROOT)/mattermost
 
 	tar -xvzf $(DIST_ROOT)/mattermost-team.tar.gz -C $(DIST_ROOT)
-	cp $(GOPATH)/bin/mattermost-cf-integrator $(DIST_ROOT)/mattermost
+	cp $(CURDIR)/mattermost-cf-integrator $(DIST_ROOT)/mattermost
 	echo "web: ./mattermost-cf-integrator" > $(DIST_ROOT)/mattermost/Procfile
 	pushd $(DIST_ROOT) && zip -r mattermost-cf-team mattermost/* && popd
 	rm -Rf $(DIST_ROOT)/mattermost
