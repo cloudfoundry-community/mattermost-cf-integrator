@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
+
+set -xe
+
 CW=$(pwd)
 
 actual_version=$(curl -s http://about.mattermost.com/download/ -L | pup '.p1.s1' | grep Release | awk '{print $3}')
 current_version=$(head -n 1 "$CW/mattermost-integrator-release/tag")
-if [ "$actual_version" = "$current_version" ]; then
+if [ "v$actual_version" == "$current_version" ]; then
     echoc "[yellow]You should don't care about this error."
     echoc "[green]The version $actual_version already exists."
     exit 1
