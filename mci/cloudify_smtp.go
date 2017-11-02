@@ -3,9 +3,9 @@ package mci
 import (
 	"github.com/cloudfoundry-community/gautocloud/connectors/smtp/raw"
 	"github.com/cloudfoundry-community/gautocloud/connectors/smtp/smtptype"
-	"strings"
-	"strconv"
 	"github.com/cloudfoundry-community/gautocloud/loader"
+	"strconv"
+	"strings"
 )
 
 var knownSmtp map[string]SmtpType
@@ -43,5 +43,3 @@ func cloudifySmtp(loader *loader.Loader, mattermostConfig *MattermostConfig) err
 	mattermostConfig.EmailSettings.ConnectionSecurity = connectionSecurity
 	return nil
 }
-
-

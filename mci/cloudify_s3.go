@@ -17,7 +17,7 @@ func cloudifyS3(loader *loader.Loader, mattermostConfig *MattermostConfig) error
 		return err
 	}
 	mattermostConfig.FileSettings.DriverName = "amazons3"
-	mattermostConfig.FileSettings.AmazonS3AccessKeyId = svc.AccessKeyID
+	mattermostConfig.FileSettings.AmazonS3AccessKeyID = svc.AccessKeyID
 	mattermostConfig.FileSettings.AmazonS3SecretAccessKey = svc.SecretAccessKey
 	mattermostConfig.FileSettings.AmazonS3Bucket = svc.Bucket
 	endpoint := svc.Host
@@ -27,8 +27,10 @@ func cloudifyS3(loader *loader.Loader, mattermostConfig *MattermostConfig) error
 	}
 	if svc.UseSsl {
 		endpoint = "https://" + endpoint
+		mattermostConfig.FileSettings.AmazonS3SSL = true
 	} else {
 		endpoint = "http://" + endpoint
+		mattermostConfig.FileSettings.AmazonS3SSL = false
 	}
 	if svc.Port != 0 {
 		endpoint += ":" + strconv.Itoa(svc.Port)
