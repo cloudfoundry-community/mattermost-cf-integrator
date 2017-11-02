@@ -18,7 +18,6 @@ type FileSettings struct {
 	AmazonS3SecretAccessKey string `json:"AmazonS3SecretAccessKey"`
 	AmazonS3Bucket          string `json:"AmazonS3Bucket"`
 	AmazonS3Endpoint        string `json:"AmazonS3Endpoint"`
-	AmazonS3SSL             bool   `json:"AmazonS3SSL"`
 }
 
 type EmailSettings struct {
