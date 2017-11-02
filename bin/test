@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+set -e
+
 PORT="8065"
 VCAP_SERVICES='{"cleardb":[{"credentials":{"uri":"mysql://titi:toto@my.db.com:3306/mydbname?reconnect=true"},"label":"cleardb","name":"dbmattermost","plan":"spark","tags":["mysql"]}]}'
 VCAP_APPLICATION='{"application_id":"05b41155-9773-48be-8c6c","application_name":"mattermost","application_uris":["mattermost-ah.test.io"],"application_version":"44478127-f1d3-4d37-995b","limits":{"disk":1024,"fds":16384,"mem":1024},"name":"mattermost-ah","space_id":"96ecb509-9063-41b7-ac36-147e5f145549","space_name":"development","uris":["mattermost.app.io"],"users":null,"version":"44478127-f1d3-4d37-995b" }'
