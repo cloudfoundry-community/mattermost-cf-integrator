@@ -1,0 +1,44 @@
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
+resources:
+  - name: 50m-during-midnight-hour
+    type: time
+    source:
+      start: 12:00 AM
+      stop: 1:00 AM
+      location: {{location}}
+  - name: mattermost-integrator-release
+    type: github-release
+    source:
+      user: cloudfoundry-community
+      repository: mattermost-cf-integrator
+      access_token: {{github-token}}
+  - name: mattermost-integrator
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry-community/mattermost-cf-integrator.git
+      branch: master
+jobs:
+  - name: mattermost-release
+    plan:
+      - get: 50m-during-midnight-hour
+        trigger: true
+      - get: mattermost-integrator-release
+      - get: mattermost-integrator
+      - task: release-new-version
+        file: mattermost-integrator/concourse/tasks/check-version.yml
+        params:
+          slack_url: {{slack-url}}
+          slack_channel: {{slack-channel}}
+          slack_username: Concourse
+          slack_icon: "https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg"
+      - put: mattermost-integrator-release
+        params:
+          tag: release-info/tag_to_release
+          name: release-info/name_of_release
+          body: release-info/body
+          tag_prefix: v

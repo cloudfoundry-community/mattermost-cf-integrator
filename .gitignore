@@ -1,4 +1,5 @@
 /mattermost
+creds.yml
 /mattermost-cf-integrator
 /config
 /dist

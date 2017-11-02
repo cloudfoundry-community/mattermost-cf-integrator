@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: orangecloudfoundry/mattermost-cf-integrator-ci
+
+inputs:
+- name: mattermost-integrator
+- name: mattermost-integrator-release
+
+outputs:
+- name: release-info
+
+run:
+  path: mattermost-integrator/concourse/tasks/check-version.sh
