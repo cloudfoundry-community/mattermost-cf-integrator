@@ -45,7 +45,7 @@
   "LogSettings": {
     "EnableConsole": true,
     "ConsoleLevel": "DEBUG",
-    "EnableFile": true,
+    "EnableFile": false,
     "FileLevel": "INFO",
     "FileFormat": "",
     "FileLocation": ""

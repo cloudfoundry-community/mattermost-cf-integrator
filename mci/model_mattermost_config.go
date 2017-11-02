@@ -19,7 +19,9 @@ type FileSettings struct {
 	AmazonS3Bucket          string `json:"AmazonS3Bucket"`
 	AmazonS3Endpoint        string `json:"AmazonS3Endpoint"`
 }
-
+type LogSettings struct {
+	EnableFile bool `json:"EnableFile"`
+}
 type EmailSettings struct {
 	SendEmailNotifications   bool   `json:"SendEmailNotifications"`
 	RequireEmailVerification bool   `json:"RequireEmailVerification"`
@@ -35,4 +37,5 @@ type MattermostConfig struct {
 	SqlSettings     SqlSettings
 	FileSettings    FileSettings
 	EmailSettings   EmailSettings
+	LogSettings     LogSettings
 }
