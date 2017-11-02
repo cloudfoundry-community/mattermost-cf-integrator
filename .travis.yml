@@ -4,8 +4,6 @@ go:
 install:
 - go get -v github.com/golang/protobuf/proto
 - go get -v -d ./...
-before_deploy:
-- gem install mime-types -v 2.6.2
 script:
 - bin/test
 after_success:
@@ -15,12 +13,15 @@ after_success:
 - go build
 - mv mattermost-cf-integrator mattermost/
 - ! 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
-- zip -r mattermost-cf mattermost/*
+- cd mattermost
+- zip -r ../mattermost-cf.zip ./*
+- cd ..
 deploy:
   provider: releases
   api_key:
     secure: hz+kRj8uprHpn1zHPasdYU42rRnEntE2so/NP9vfwpwhSE3a44u+WSVef0Orptm+zWKafXvtxdgsI9iFwX3mgWjUEW0Hv4vM1nOdPCLYmg8bDe70VQpMCVxB4VF2orvPNt7s3F52XYBU1jk9VZuIEOh1TplxCeF6AdpwPAHTzh0zi/GtvzjTM+77N/ddBdx/pwyl+1m16tWj3GRroooZaLHYN9X48treDKSLfvQEyx1WE2e9y272s03j5iZ2Pz+YCd57kytRlutLMsqTh4zELGA7YKfdeBAt4F/jXSS9elH9Ekaa7jvUtqIXhaK9TpruNTEBeS4VIv98btjnLJcm8nlNT29zCBrfMYH98G5qN38kLUZW/F7eyNJ8LtuYfhRCZLuh6Q/MGw+hMqyQWRep8Nq4WPhfPFFqFYL7oYDt3RkDlTX3CvF+tTxwMbKL2BWDRpxj/uRB+iMs28ezg2AM3JrhB/IiDIPlHF9VEo/FF4hdQj4WoIMakcGQFTIZnQppyeXPv37IpjY0eWA04fTSl1aYo7nZabe/ZoyYOniu2hbTiLEN4yRSE4MaicoXImOrio5JhK5jpkc1/TJ78gqvCSzFHjT8DMpz80Hrauf9ujzWhnm44bPVrr/o2vaVpeKNaWMmHNClevG3S0gb9XFIZBnjmby5EJwRNxQGRx2bk8Q=
   file: mattermost-cf.zip
+  skip_cleanup: true
   on:
     tags: true
     all_branches: true
