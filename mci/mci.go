@@ -63,6 +63,7 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 		log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		logger.Linfo,
 	)
+
 	var err error
 	if !ld.IsInACloudEnv() {
 		return errors.New("Not in any cloud environment.")
@@ -77,6 +78,7 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	if mattermostConfig.ServiceSettings.WebsocketSecurePort == 0 {
 		mattermostConfig.ServiceSettings.WebsocketSecurePort = 443
 	}
+	mattermostConfig.ServiceSettings.SiteURL = RetrieveSiteUrl(ld)
 	err = cloudifyDatabase(ld, mattermostConfig)
 	if err != nil {
 		return err
@@ -91,7 +93,16 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	}
 	return nil
 }
-
+func RetrieveSiteUrl(ld *loader.Loader) string {
+	cloudProps := ld.CurrentCloudEnv().GetAppInfo().Properties
+	if _, ok := cloudProps["uris"]; !ok {
+		return ""
+	}
+	if uris, ok := cloudProps["uris"].([]string); ok {
+		return "http://" + uris[0]
+	}
+	return ""
+}
 func ExtractConfig(configFilePath string) (*MattermostConfig, error) {
 	var err error
 	var mattermostConfig MattermostConfig
