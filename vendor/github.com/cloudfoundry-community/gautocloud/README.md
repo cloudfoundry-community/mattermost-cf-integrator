@@ -4,7 +4,7 @@
 Gautocloud provides a simple abstraction that golang based applications can use 
 to discover information about the cloud environment on which they are running, 
 to connect to services automatically with ease of use in mind. It provides out-of-the-box support 
-for discovering common services on Heroku and Cloud Foundry cloud platforms, 
+for discovering common services on Heroku, Cloud Foundry and kubernetes cloud platforms, 
 and it supports custom automatic connectors.
 
 This project can be assimilated to the [spring-cloud-connector](https://github.com/spring-cloud/spring-cloud-connectors) project
@@ -17,6 +17,7 @@ This project can be assimilated to the [spring-cloud-connector](https://github.c
 - [Cloud Environments](#cloud-environments)
   - [Cloud Foundry](#cloud-foundry)
   - [Heroku](#heroku)
+  - [Kubernetes](#kubernetes)
   - [Local](#local)
 - [Concept](#concept)
   - [Architecture](#architecture)
@@ -25,6 +26,7 @@ This project can be assimilated to the [spring-cloud-connector](https://github.c
 - [Create your own connector](#create-your-own-connector)
 - [Create your own Cloud Environment](#create-your-own-cloud-environment)
 - [Use it without the facade](#use-it-without-the-facade)
+- [Use mocked facade for your test](#use-mocked-facade-for-your-test)
 - [Run tests](#run-tests)
 - [Contributing](#contributing)
 - [FAQ](#faq)
@@ -49,15 +51,21 @@ package main
 import (
         "fmt"
         "github.com/cloudfoundry-community/gautocloud"
-        "github.com/cloudfoundry-community/gautocloud/logger"
-        "log"
         "os"
+        log "github.com/sirupsen/logrus"
         _ "github.com/cloudfoundry-community/gautocloud/connectors/databases/client/mysql" // this register the connector mysql to gautocloud
         "github.com/cloudfoundry-community/gautocloud/connectors/databases/dbtype"
 )
+
+func init(){
+    // Gautocloud use logrus as logger, see: https://github.com/sirupsen/logrus
+    // When using facade, first log messages are emitted with default level from logrus (INFO) and debug message cannot be seen
+    // You must explicitely ask to see logs which couldn't be seen during initialization
+    log.SetLevel(log.DebugLevel)
+    gautocloud.ShowPreviousLog()
+}
+
 func main() {
-        // always attach a logger to see what happens
-        gautocloud.SetLogger(log.New(os.Stdout, "", log.Ldate | log.Ltime), logger.Linfo) // set to level Ldebug to see services found
         appInfo := gautocloud.GetAppInfo() // retrieve all informations about your application instance
         fmt.Println(appInfo.Name) // give the app name
         // by injection 
@@ -160,8 +168,11 @@ It returns a service with credentials:
   "host": "localhost"
 }
 ```
-**Note**: if a env var key doesn't contains `_` (e.g.: `SVC=localhost`) it will give those credentials: `{"svc": "localhost", "uri": "localhost"}`.
+**Note**: 
+- if a env var key doesn't contains `_` (e.g.: `SVC=localhost`) it will give those credentials: `{"svc": "localhost", "uri": "localhost"}`.
+- If the value of an env var is in json it will be decode the json and pass content as credentials
 
+**Retrieves**:
 - **Service detection by tags**: each tag work like by name.
 - **App information id**: id of the app given by the env var `DYNO`
 - **App information name**: Set the env var `GAUTOCLOUD_APP_NAME` to give a name to your app instead it will be `<unknown>`
@@ -169,13 +180,54 @@ It returns a service with credentials:
   - `host`: (type: *string*) host of the app.
   - `port`: (type: *int*) port of the app.
 
+### Kubernetes
+
+- **Cloud Detection**: if the `KUBERNETES_PORT` env var exists
+- **Service detection by name**: Look all env var which contains the name required by a connector. Env var key are after parsed to create credentials.
+Example:
+```
+you have env var:
+- `MY_SVC_SERVICE_NAME=myname`
+- `MY_SVC_SERVICE_HOST=localhost`
+
+Connector required name `SVC`.
+CloudEnv remove `_SERVICE` from the key and decode `MY_SVC_NAME` to [MY, SVC, NAME] and [MY, SVC, VALUE] 
+and detect that there is SVC in those two env var.
+It returns a service with credentials:
+{
+  "name": "myname",
+  "host": "localhost"
+}
+```
+**Note**:
+- if a env var key doesn't contains `_` (e.g.: `SVC=localhost`) it will give those credentials: `{"svc": "localhost", "uri": "localhost"}`.
+- If the value of an env var is in json it will be decode the json and pass content as credentials
+
+**Retrieves**:
+- **Service detection by tags**: each tag work like by name.
+- **App information id**: id of the app given by the env var `HOSTNAME`
+- **App information name**: Name of the app given by the env var `HOSTNAME`
+- **App information properties**:
+  - `host`: (type: *string*) host of the app.
+  - `port`: (type: *int*) port of the app.
+  - All values starting by `KUBERNETES` in env vars key.
+  
 ### Local
 
-This is a special *CloudEnv* and can be considered as a fake one.
+This is a special *CloudEnv* and can be considered as a fake one. 
+You can also use it to be able to use a config file directly without pain (but it's not 12 factors).
 
-You need to set the env var `CLOUD_FILE` which contains the path of a configuration files containing services. 
-This config file can be a `yml`, `json`, `toml` or `hcl` file. It only requires to follow this pattern (example in yml):
+You have 2 possibilities to trigger this cloud env (they can be used in same time):
+- You can set the env var `CLOUD_FILE` which contains the path of a configuration files containing services.
+- You can create a `config file` called `config.yml` in your current working directory or set the env var `CONFIG_FILE` 
+which contains the path of your config file. 
 
+A `config file` or a `cloud file` can be a `yml`, `json`, `toml` or `hcl` file.
+
+A `config file` can contains anything you wants, this will register by itself a service named `config` with tag `config` 
+which contains you configuration from the file.
+
+A `cloud file` must follow this pattern (example in yml):
 ```yml
 app_name: "myapp" # set the app name you want (it can be not set)
 services:
@@ -189,7 +241,7 @@ services:
 
 You can see how to follow the same pattern with other format here: [/cloudenv/local_cloudenv_test.go#L13-L86](/cloudenv/local_cloudenv_test.go#L13-L86).
 
-- **Cloud Detection**: if the `CLOUD_FILE` env var exists and not empty.
+- **Cloud Detection**: if the `CLOUD_FILE` env var exists and not empty or if `config file` can be found.
 - **Service detection by name**: Look if a service in the config file match the name required by a connector.
 - **Service detection by tags**: Look if a service in the config file match one of tag required by a connector.
 - **App information id**: random uuid
@@ -227,9 +279,20 @@ This decoder can be used in other context. (see: [/decoder/decoder.go](/decoder/
 
 ## Create your own connector
 
-The best way is to look at an example here: [/connectors/example_test.go](/connectors/example_test.go).
+The best way is to look at an example here: [/connectors/connector_example_test.go](/connectors/connector_example_test.go).
 
-**Note**: Add your connector on the dedicated wiki page: https://github.com/cloudfoundry-community/gautocloud/wiki/Connectors
+You can also want to see how to create connector with interceptor here: [/connectors/intercepter_example_test.go](/connectors/intercepter_example_test.go).
+
+**Note**: 
+- An interceptor work like a http middleware. 
+This permit to intercept data which will be given back by gautocloud and modified it before giving back to user.
+Interceptor should be used in a connector, to do so, connector have to implement ConnectorIntercepter:
+```go
+type ConnectorIntercepter interface {
+    Intercepter() interceptor.Intercepter
+}
+```
+- Add your connector on the dedicated wiki page: https://github.com/cloudfoundry-community/gautocloud/wiki/Connectors
 
 ## Create your own Cloud Environment
 
@@ -248,21 +311,23 @@ import (
         "fmt"
         "github.com/cloudfoundry-community/gautocloud/loader"
         "github.com/cloudfoundry-community/gautocloud/cloudenv"
-        "github.com/cloudfoundry-community/gautocloud/logger"
-        "log"
+        log "github.com/sirupsen/logrus"
         "os"
         "github.com/cloudfoundry-community/gautocloud/connectors/databases/client/mysql" // this register the connector mysql to gautocloud
         "github.com/cloudfoundry-community/gautocloud/connectors/databases/dbtype"
 )
+
 func main() {
-        ld := loader.NewLoaderWithLogger(
+        // Gautocloud use logrus as logger, see: https://github.com/sirupsen/logrus
+        // In this case reload connectors is not necessary to see logs.
+        log.SetLevel(log.DebugLevel)
+        ld := loader.NewLoader(
             []cloudenv.CloudEnv{
                 cloudenv.NewCfCloudEnv(),
                 cloudenv.NewHerokuCloudEnv(),
+                cloudenv.NewKubernetesCloudEnv(),
                 cloudenv.NewLocalCloudEnv(),
             },
-            log.New(os.Stdout, "", log.Ldate | log.Ltime), 
-            logger.Linfo,
         )
         ld.RegisterConnector(mysql.NewMysqlConnector()) // you need to manually register connectors
         
@@ -278,6 +343,16 @@ func main() {
         
 }
 ```
+
+## Use mocked facade for your test
+
+If you need to write your tests with a mocked gautocloud (and use the facade), you can ask to go compiler to get a mocked version.
+
+To perform this, simply run your test with the tags `gautocloud_mock` (e.g.: `go test -tags gautocloud_mock`).
+
+The facade will load a [gomock](https://github.com/golang/mock) version of the loader. 
+You can find, for example, how to perform injection with this mocked version here: 
+[/test-mock/test_mock_test.go](/test-mock/test_mock_test.go) (see also [gomock documentation](https://github.com/golang/mock) to learn more)
 
 ## Run tests
 
@@ -302,7 +377,7 @@ Don't be shy to send a PR to add another cloud environment as a builtin one.
 
 **Why do I need to import a connector even if it's a builtin one ?**
 
-You need to import it because if you didn't have to it will requires to load all default connectors with 
+You need to import it because if you didn't have to it, it will requires to load all default connectors with 
 associated dependencies to the connector which can make a huge binary. 
 
 In our case, it will compile only what you need by importing the connector.

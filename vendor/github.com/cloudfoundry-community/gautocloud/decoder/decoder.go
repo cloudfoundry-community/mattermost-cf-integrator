@@ -6,27 +6,29 @@
 //  	Name    string `cloud:"name"`           // note: by default if you don't provide a cloud tag the key will be the field name in snake_case
 //  	Uri     decoder.ServiceUri              // ServiceUri is a special type. Decoder will expect an uri as a value and will give a ServiceUri
 //  	User    string `cloud:".*user.*,regex"` // by passing `regex` in cloud tag it will say to decoder that the expected key must be match the regex
-//  	Password string `cloud:".*user.*,regex,default=apassword"` // by passing `default=avalue` decoder will understand that if the key is not found it must fill the field with this value
-//      Aslice   []string `cloud:"aslice,default=value1,value2"` // you can also pass a slice
+//  	Password string `cloud:".*user.*,regex" cloud-default:"apassword"` // by passing a tag named `cloud-default` decoder will understand that if the key is not found it must fill the field with this value
+//      Aslice   []string `cloud:"aslice" cloud-default:"value1,value2"` // you can also pass a slice
 //  }
 package decoder
 
 import (
-	"reflect"
-	"strings"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/azer/snakecase"
+	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
-	"net/url"
-	"errors"
-	"github.com/azer/snakecase"
+	"strings"
 )
 
 const (
-	identifier = "cloud"
-	regexTag = "regex"
-	defaultTag = "default"
-	skipTag = "-"
+	identifier               = "cloud"
+	identifier_default_value = "cloud-default"
+	regexTag                 = "regex"
+	defaultTag               = "default"
+	skipTag                  = "-"
 )
 
 type Tag struct {
@@ -72,17 +74,16 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 		if tag.IsRegex {
 			key = getKeyFromRegex(serviceCredentials, tag.Name)
 		}
-		if !isValueExists(serviceCredentials, key) && tag.DefaultValue == "" {
+		defaultValueFromTag := tField.Tag.Get(identifier_default_value)
+		if defaultValueFromTag != "" {
+			tag.DefaultValue = defaultValueFromTag
+		}
+		data := retrieveFinalData(vField.Kind(), serviceCredentials, key, tag.DefaultValue)
+		if data == nil {
 			continue
 		}
-		var data interface{}
-		if !isValueExists(serviceCredentials, key) && tag.DefaultValue != "" {
-			data = tag.DefaultValue
-		} else {
-			data = serviceCredentials[key]
-		}
 		dataKind := reflect.TypeOf(data).Kind()
-		if dataKind == reflect.String {
+		if dataKind == reflect.String && reflect.TypeOf(data) != reflect.TypeOf(json.Number("")) {
 			data, err = convertStringValue(data.(string), vField)
 			if err != nil {
 				return NewErrDecode(fmt.Sprintf(
@@ -101,14 +102,25 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 	}
 	return nil
 }
+
 // Decode a map of credentials into a structure
 func Unmarshal(serviceCredentials map[string]interface{}, obj interface{}) error {
 	ps := reflect.ValueOf(obj)
 	return UnmarshalToValue(serviceCredentials, ps)
 }
-func parseFloat(data interface{}, vField reflect.Value) interface{} {
-	if reflect.ValueOf(data).Kind() != reflect.Float32 && reflect.ValueOf(data).Kind() != reflect.Float64 {
+func parseForInt(data interface{}, vField reflect.Value) interface{} {
+	if reflect.ValueOf(data).Kind() != reflect.Float32 &&
+		reflect.ValueOf(data).Kind() != reflect.Float64 &&
+		reflect.TypeOf(data) != reflect.TypeOf(json.Number("")) {
 		return data
+	}
+	if reflect.TypeOf(data) == reflect.TypeOf(json.Number("")) {
+		jsonInt, err := data.(json.Number).Int64()
+		if err != nil {
+			panic(err)
+		}
+		val, _ := convertStringValue(fmt.Sprintf("%d", jsonInt), vField)
+		return val
 	}
 	if reflect.ValueOf(data).Kind() == reflect.Float32 {
 		val, _ := convertStringValue(fmt.Sprintf("%.0f", data.(float32)), vField)
@@ -117,40 +129,54 @@ func parseFloat(data interface{}, vField reflect.Value) interface{} {
 	val, _ := convertStringValue(fmt.Sprintf("%.0f", data.(float64)), vField)
 	return val
 }
+func parseForFloat(data interface{}, vField reflect.Value) float64 {
+	if reflect.TypeOf(data) == reflect.TypeOf(json.Number("")) {
+		floatData, err := data.(json.Number).Float64()
+		if err != nil {
+			panic(err)
+		}
+		return floatData
+	}
+	if vField.Kind() == reflect.Float32 {
+		return float64(data.(float32))
+	}
+	return data.(float64)
+}
+
 func affect(data interface{}, vField reflect.Value) error {
 	switch vField.Kind() {
 	case reflect.String:
 		vField.SetString(data.(string))
 		break
 	case reflect.Int:
-		vField.SetInt(int64(parseFloat(data, vField).(int)))
+		vField.SetInt(int64(parseForInt(data, vField).(int)))
 		break
 	case reflect.Int8:
-		vField.SetInt(int64(parseFloat(data, vField).(int8)))
+		vField.SetInt(int64(parseForInt(data, vField).(int8)))
 		break
 	case reflect.Int16:
-		vField.SetInt(int64(parseFloat(data, vField).(int16)))
+		vField.SetInt(int64(parseForInt(data, vField).(int16)))
 		break
 	case reflect.Int32:
-		vField.SetInt(int64(parseFloat(data, vField).(int32)))
+		vField.SetInt(int64(parseForInt(data, vField).(int32)))
 		break
 	case reflect.Int64:
-		vField.SetInt(parseFloat(data, vField).(int64))
+		vField.SetInt(parseForInt(data, vField).(int64))
 		break
 	case reflect.Uint:
-		vField.SetUint(uint64(parseFloat(data, vField).(uint)))
+		vField.SetUint(uint64(parseForInt(data, vField).(uint)))
 		break
 	case reflect.Uint8:
-		vField.SetUint(uint64(parseFloat(data, vField).(uint8)))
+		vField.SetUint(uint64(parseForInt(data, vField).(uint8)))
 		break
 	case reflect.Uint16:
-		vField.SetUint(uint64(parseFloat(data, vField).(uint16)))
+		vField.SetUint(uint64(parseForInt(data, vField).(uint16)))
 		break
 	case reflect.Uint32:
-		vField.SetUint(uint64(parseFloat(data, vField).(uint32)))
+		vField.SetUint(uint64(parseForInt(data, vField).(uint32)))
 		break
 	case reflect.Uint64:
-		vField.SetUint(parseFloat(data, vField).(uint64))
+		vField.SetUint(parseForInt(data, vField).(uint64))
 		break
 	case reflect.Slice:
 		if vField.IsNil() {
@@ -159,9 +185,24 @@ func affect(data interface{}, vField reflect.Value) error {
 		if reflect.ValueOf(data).Kind() != reflect.Slice {
 			return errors.New(fmt.Sprintf("Type '%s' have not receive a slice.", vField.String()))
 		}
+
 		dataValue := reflect.ValueOf(data)
+		if dataValue.Type().Kind() == reflect.Interface {
+			dataValue = dataValue.Elem()
+		}
 		for i := 0; i < dataValue.Len(); i++ {
-			vField.Set(reflect.Append(vField, dataValue.Index(i)))
+			var newElem reflect.Value
+			dataValueElem := dataValue.Index(i)
+			if dataValueElem.Type().Kind() == reflect.Interface {
+				dataValueElem = dataValueElem.Elem()
+			}
+			newElem = dataValueElem
+			if dataValueElem.Type() == reflect.TypeOf(make(map[string]interface{})) {
+				newElem = reflect.New(vField.Type().Elem())
+				UnmarshalToValue(dataValueElem.Interface().(map[string]interface{}), newElem)
+				newElem = newElem.Elem()
+			}
+			vField.Set(reflect.Append(vField, newElem))
 		}
 		break
 	case reflect.Interface:
@@ -171,10 +212,10 @@ func affect(data interface{}, vField reflect.Value) error {
 		vField.SetBool(data.(bool))
 		break
 	case reflect.Float32:
-		vField.SetFloat(float64(data.(float32)))
+		vField.SetFloat(parseForFloat(data, vField))
 		break
 	case reflect.Float64:
-		vField.SetFloat(data.(float64))
+		vField.SetFloat(parseForFloat(data, vField))
 		break
 	case reflect.Ptr:
 		if vField.IsNil() {
@@ -189,6 +230,11 @@ func affect(data interface{}, vField reflect.Value) error {
 		servUriType := reflect.TypeOf(ServiceUri{})
 		if vField.Type() != servUriType && reflect.TypeOf(data) != reflect.TypeOf(make(map[string]interface{})) {
 			return NewErrTypeNotSupported(vField)
+		}
+		if vField.Type() == reflect.TypeOf(make(map[string]interface{})) &&
+			reflect.TypeOf(data) == reflect.TypeOf(make(map[string]interface{})) {
+			vField.Set(reflect.ValueOf(data))
+			break
 		}
 		if reflect.TypeOf(data) == reflect.TypeOf(make(map[string]interface{})) {
 			return UnmarshalToValue(data.(map[string]interface{}), vField)
@@ -221,9 +267,9 @@ func parseInTag(tag, fieldName string) Tag {
 	}
 
 	return Tag{
-		Name: name,
-		Skip: skipped,
-		IsRegex: hasRegexTag(splitedTag[1:]),
+		Name:         name,
+		Skip:         skipped,
+		IsRegex:      hasRegexTag(splitedTag[1:]),
 		DefaultValue: getDefaultTagValue(splitedTag[1:]),
 	}
 }
@@ -245,6 +291,24 @@ func getDefaultTagValue(tags []string) string {
 		return strings.TrimSpace(strings.Join(splitedDefTag[1:], "="))
 	}
 	return ""
+}
+func retrieveFinalData(kind reflect.Kind, serviceCredentials map[string]interface{}, key, defaultValue string) interface{} {
+	valueExists := isValueExists(serviceCredentials, key)
+	if !valueExists &&
+		defaultValue == "" &&
+		kind != reflect.Struct {
+		return nil
+	}
+	if valueExists {
+		return serviceCredentials[key]
+	}
+	if !valueExists && defaultValue != "" {
+		return defaultValue
+	}
+	if !valueExists && kind == reflect.Struct {
+		return make(map[string]interface{})
+	}
+	return nil
 }
 func isValueExists(serviceCredentials map[string]interface{}, key string) bool {
 	if key == "" {
@@ -283,7 +347,7 @@ func urlToServiceUri(url *url.URL) ServiceUri {
 	queries := make([]QueryUri, 0)
 	for key, value := range url.Query() {
 		queries = append(queries, QueryUri{
-			Key: key,
+			Key:   key,
 			Value: value[0],
 		})
 	}
@@ -295,13 +359,13 @@ func urlToServiceUri(url *url.URL) ServiceUri {
 		port, _ = strconv.Atoi(splitedHost[1])
 	}
 	return ServiceUri{
-		Scheme: url.Scheme,
+		Scheme:   url.Scheme,
 		Username: username,
 		Password: password,
-		Host: host,
-		Port: port,
-		Name: strings.TrimPrefix(url.Path, "/"),
-		Query: queries,
+		Host:     host,
+		Port:     port,
+		Name:     strings.TrimPrefix(url.Path, "/"),
+		Query:    queries,
 		RawQuery: url.RawQuery,
 	}
 }

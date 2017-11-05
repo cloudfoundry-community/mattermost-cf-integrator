@@ -5,9 +5,7 @@ import (
 	"errors"
 	"github.com/cloudfoundry-community/gautocloud"
 	"github.com/cloudfoundry-community/gautocloud/loader"
-	"github.com/cloudfoundry-community/gautocloud/logger"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -58,12 +56,9 @@ func mergeMaps(parent, partial map[string]interface{}) map[string]interface{} {
 }
 
 func CloudifyConfig(mattermostConfig *MattermostConfig) error {
-	ld := loader.NewLoaderWithLogger(
+	ld := loader.NewLoader(
 		gautocloud.CloudEnvs(),
-		log.New(os.Stdout, "", log.Ldate|log.Ltime),
-		logger.Linfo,
 	)
-
 	var err error
 	if !ld.IsInACloudEnv() {
 		return errors.New("Not in any cloud environment.")
@@ -94,7 +89,7 @@ func CloudifyConfig(mattermostConfig *MattermostConfig) error {
 	}
 	return nil
 }
-func RetrieveSiteUrl(ld *loader.Loader) string {
+func RetrieveSiteUrl(ld loader.Loader) string {
 	cloudProps := ld.CurrentCloudEnv().GetAppInfo().Properties
 	if _, ok := cloudProps["uris"]; !ok {
 		return ""

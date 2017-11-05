@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudfoundry-community/gautocloud/connectors/databases/dbtype"
-	"strconv"
-	"github.com/cloudfoundry-community/gautocloud/loader"
 	"github.com/cloudfoundry-community/gautocloud/connectors/databases/raw"
+	"github.com/cloudfoundry-community/gautocloud/loader"
+	"strconv"
 )
 
-func cloudifyDatabase(loader *loader.Loader, mattermostConfig *MattermostConfig) error {
+func cloudifyDatabase(loader loader.Loader, mattermostConfig *MattermostConfig) error {
 	loader.RegisterConnector(raw.NewMysqlRawConnector())
 	loader.RegisterConnector(raw.NewPostgresqlRawConnector())
 	var postSvc dbtype.PostgresqlDatabase
@@ -21,7 +21,7 @@ func cloudifyDatabase(loader *loader.Loader, mattermostConfig *MattermostConfig)
 			"postgres://%s:%s@%s/%s?sslmode=disable&connect_timeout=10",
 			postSvc.User,
 			postSvc.Password,
-			postSvc.Host + ":" + strconv.Itoa(postSvc.Port),
+			postSvc.Host+":"+strconv.Itoa(postSvc.Port),
 			postSvc.Database)
 		return nil
 	}
@@ -35,7 +35,7 @@ func cloudifyDatabase(loader *loader.Loader, mattermostConfig *MattermostConfig)
 		"%s:%s@tcp(%s)/%s?charset=utf8mb4,utf8",
 		mySvc.User,
 		mySvc.Password,
-		mySvc.Host + ":" + strconv.Itoa(mySvc.Port),
+		mySvc.Host+":"+strconv.Itoa(mySvc.Port),
 		mySvc.Database)
 	return nil
 }

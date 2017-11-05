@@ -20,7 +20,7 @@ func init() {
 		ConnectionSecurity: "STARTTLS",
 	}
 }
-func cloudifySmtp(loader *loader.Loader, mattermostConfig *MattermostConfig) error {
+func cloudifySmtp(loader loader.Loader, mattermostConfig *MattermostConfig) error {
 	loader.RegisterConnector(raw.NewSmtpRawConnector())
 	var svc smtptype.Smtp
 	err := loader.Inject(&svc)

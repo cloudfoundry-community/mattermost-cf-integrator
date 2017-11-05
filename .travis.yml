@@ -3,6 +3,8 @@ go:
 - 1.9
 install:
 - go get -v github.com/golang/protobuf/proto
+- go get github.com/onsi/ginkgo/ginkgo
+- go get github.com/onsi/gomega
 - go get -v -d ./...
 script:
 - bin/test

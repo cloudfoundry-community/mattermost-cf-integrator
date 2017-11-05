@@ -9,7 +9,7 @@ import (
 
 const DEFAULT_S3_HOST = "s3.amazonaws.com"
 
-func cloudifyS3(loader *loader.Loader, mattermostConfig *MattermostConfig) error {
+func cloudifyS3(loader loader.Loader, mattermostConfig *MattermostConfig) error {
 	loader.RegisterConnector(raw.NewS3RawConnector())
 	var svc objstoretype.S3
 	err := loader.Inject(&svc)

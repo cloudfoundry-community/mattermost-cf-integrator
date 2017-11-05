@@ -1,7 +1,7 @@
 // It handles the conversion of a service to a real client or structure which can be manipulated after by user.
 package connectors
 
-
+import "github.com/cloudfoundry-community/gautocloud/interceptor"
 
 // this is the interface to be implemented to create a new connector
 // You should add an init function in the same package of your connector and register it automatically in gautocloud when importing your connector
@@ -33,7 +33,12 @@ type Connector interface {
 	//  	Name    string `cloud:"name"`           // note: by default if you don't provide a cloud tag the key will be the field name in snake_case
 	//  	Uri     decoder.ServiceUri              // ServiceUri is a special type. Decoder will expect an uri as a value and will give a ServiceUri
 	//  	User    string `cloud:".*user.*,regex"` // by passing `regex` in cloud tag it will say to decoder that the expected key must be match the regex
-	//  	Password string `cloud:".*user.*,regex,default=apassword"` // by passing `default=avalue` decoder will understand that if the key is not found it must fill the field with this value
+	//  	Password string `cloud:".*user.*,regex" cloud-default:"apassword"` // by passing a tag named `cloud-default` decoder will understand that if the key is not found it must fill the field with this value
 	//  }
 	Schema() interface{}
+}
+
+// If a connector want to intercept
+type ConnectorIntercepter interface {
+	Intercepter() interceptor.Intercepter
 }

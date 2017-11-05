@@ -1,21 +1,23 @@
 package cloudenv
 
 import (
-	"os"
 	"fmt"
+	"os"
 
-	"github.com/spf13/viper"
 	"encoding/json"
-	"io"
-	"reflect"
-	"path/filepath"
 	"errors"
 	"github.com/satori/go.uuid"
+	"github.com/spf13/viper"
+	"io"
+	"path/filepath"
+	"reflect"
 )
 
 const (
-	LOCAL_ENV_KEY = "CLOUD_FILE"
-	SERVICES_CONFIG_KEY = "services"
+	LOCAL_ENV_KEY        = "CLOUD_FILE"
+	LOCAL_CONFIG_ENV_KEY = "CONFIG_FILE"
+	DEFAULT_CONFIG_PATH  = "config.yml"
+	SERVICES_CONFIG_KEY  = "services"
 )
 
 type LocalCloudEnv struct {
@@ -34,18 +36,6 @@ func NewLocalCloudEnv() CloudEnv {
 	cloudEnv.servicesLocal = make([]ServiceLocal, 0)
 	return cloudEnv
 }
-func (c *LocalCloudEnv) Load() error {
-
-	viper.SetConfigType(filepath.Ext(os.Getenv(LOCAL_ENV_KEY))[1:])
-	viper.SetConfigFile(os.Getenv(LOCAL_ENV_KEY))
-	err := viper.ReadInConfig()
-	if err != nil {
-		return errors.New(fmt.Sprintf("Fatal error on reading cloud file: %s \n", err.Error()))
-	}
-	c.loadServices(viper.Get(SERVICES_CONFIG_KEY))
-	c.loadAppName()
-	return nil
-}
 func NewLocalCloudEnvFromReader(r io.Reader, configType string) CloudEnv {
 	cloudEnv := &LocalCloudEnv{}
 	viper.SetConfigType(configType)
@@ -57,6 +47,58 @@ func NewLocalCloudEnvFromReader(r io.Reader, configType string) CloudEnv {
 	cloudEnv.loadAppName()
 	return cloudEnv
 }
+func (c *LocalCloudEnv) Load() error {
+	if c.hasCloudFile() {
+		err := c.loadCloudFile()
+		if err != nil {
+			return err
+		}
+	}
+	if c.hasConfigFile() {
+		err := c.loadConfigFile()
+		if err != nil {
+			return err
+		}
+	}
+	c.loadAppName()
+	return nil
+}
+func (c *LocalCloudEnv) loadConfigFile() error {
+	confPath := c.configPath()
+	viper.SetConfigType(filepath.Ext(confPath)[1:])
+	viper.SetConfigFile(confPath)
+	err := viper.ReadInConfig()
+	if err != nil {
+		return errors.New(fmt.Sprintf("Fatal error on reading config file: %s \n", err.Error()))
+	}
+	var creds map[string]interface{}
+	err = viper.Unmarshal(&creds)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Fatal error when unmarshaling config file: %s \n", err.Error()))
+	}
+	c.servicesLocal = append(c.servicesLocal, ServiceLocal{
+		"config",
+		[]string{"config"},
+		creds,
+	})
+	return nil
+}
+func (c *LocalCloudEnv) loadCloudFile() error {
+	viper.SetConfigType(filepath.Ext(os.Getenv(LOCAL_ENV_KEY))[1:])
+	viper.SetConfigFile(os.Getenv(LOCAL_ENV_KEY))
+	err := viper.ReadInConfig()
+	if err != nil {
+		return errors.New(fmt.Sprintf("Fatal error on reading cloud file: %s \n", err.Error()))
+	}
+	services := viper.Get(SERVICES_CONFIG_KEY)
+	if services != nil {
+		c.loadServices(viper.Get(SERVICES_CONFIG_KEY))
+	} else {
+		c.servicesLocal = make([]ServiceLocal, 0)
+	}
+	return nil
+}
+
 func (c *LocalCloudEnv) loadAppName() {
 	c.appName = "<unknown>"
 	appName := viper.Get("app_name")
@@ -67,7 +109,7 @@ func (c *LocalCloudEnv) loadAppName() {
 func (c LocalCloudEnv) Name() string {
 	return "localcloud"
 }
-func (c LocalCloudEnv) GetServicesFromName(name string) ([]Service) {
+func (c LocalCloudEnv) GetServicesFromName(name string) []Service {
 	services := make([]Service, 0)
 	for _, serviceLocal := range c.servicesLocal {
 		if match(name, serviceLocal.Name) {
@@ -78,7 +120,7 @@ func (c LocalCloudEnv) GetServicesFromName(name string) ([]Service) {
 	}
 	return services
 }
-func (c LocalCloudEnv) GetServicesFromTags(tags []string) ([]Service) {
+func (c LocalCloudEnv) GetServicesFromTags(tags []string) []Service {
 	services := make([]Service, 0)
 	for _, tag := range tags {
 		services = append(services, c.getServicesWithTag(tag)...)
@@ -122,13 +164,21 @@ func (c LocalCloudEnv) convertSliceOfMap(toConvert map[string]interface{}) map[s
 }
 func (c LocalCloudEnv) convertMapInterface(toConvert interface{}) interface{} {
 	typeData := reflect.TypeOf(toConvert)
-	if typeData != reflect.TypeOf(make(map[interface{}]interface{})) {
+	if typeData != reflect.TypeOf(make(map[interface{}]interface{})) && typeData != reflect.TypeOf(make([]interface{}, 0)) {
 		return reflect.ValueOf(toConvert).Interface()
+	}
+	if typeData == reflect.TypeOf(make([]interface{}, 0)) {
+		dataSlice := toConvert.([]interface{})
+		for i, data := range dataSlice {
+			dataSlice[i] = c.convertMapInterface(data)
+		}
+		return dataSlice
 	}
 	converted := make(map[string]interface{})
 	for key, value := range toConvert.(map[interface{}]interface{}) {
 		converted[key.(string)] = c.convertMapInterface(value)
 	}
+
 	return converted
 }
 func (c *LocalCloudEnv) loadServices(v interface{}) {
@@ -157,11 +207,28 @@ func (c *LocalCloudEnv) loadServices(v interface{}) {
 	}
 	c.servicesLocal = services
 }
-func (c LocalCloudEnv) IsInCloudEnv() bool {
-	if os.Getenv(LOCAL_ENV_KEY) != "" {
-		return true
+
+func (c LocalCloudEnv) configPath() string {
+	confPath := DEFAULT_CONFIG_PATH
+	if os.Getenv(LOCAL_CONFIG_ENV_KEY) != "" {
+		confPath = os.Getenv(LOCAL_CONFIG_ENV_KEY)
 	}
-	return false
+	return confPath
+}
+
+func (c LocalCloudEnv) hasConfigFile() bool {
+	confPath := c.configPath()
+	_, err := os.Stat(confPath)
+	if err != nil {
+		return false
+	}
+	return true
+}
+func (c LocalCloudEnv) hasCloudFile() bool {
+	return os.Getenv(LOCAL_ENV_KEY) != ""
+}
+func (c LocalCloudEnv) IsInCloudEnv() bool {
+	return c.hasCloudFile() || c.hasConfigFile()
 }
 func (c *LocalCloudEnv) GetAppInfo() AppInfo {
 	id := c.id
@@ -170,8 +237,8 @@ func (c *LocalCloudEnv) GetAppInfo() AppInfo {
 		c.id = id
 	}
 	return AppInfo{
-		Id: c.id,
-		Name: c.appName,
+		Id:         c.id,
+		Name:       c.appName,
 		Properties: make(map[string]interface{}),
 	}
 
