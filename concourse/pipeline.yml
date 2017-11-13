@@ -36,6 +36,7 @@ jobs:
           slack_channel: {{slack-channel}}
           slack_username: Concourse
           slack_icon: "https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg"
+          slack_insecure: {{slack-insecure}}
       - put: mattermost-integrator-release
         params:
           tag: release-info/tag_to_release
