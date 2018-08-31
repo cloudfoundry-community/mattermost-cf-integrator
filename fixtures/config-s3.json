@@ -66,8 +66,9 @@
     "AmazonS3SecretAccessKey": "MGB8A==",
     "AmazonS3Bucket": "service-instance",
     "AmazonS3Region": "",
-    "AmazonS3Endpoint": "https://p-riakcs.myriak.com",
+    "AmazonS3Endpoint": "p-riakcs.myriak.com",
     "AmazonS3BucketEndpoint": "",
+    "AmazonS3SSL": true,
     "AmazonS3LocationConstraint": false,
     "AmazonS3LowercaseBucket": false
   },

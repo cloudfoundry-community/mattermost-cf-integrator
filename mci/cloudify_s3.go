@@ -25,11 +25,7 @@ func cloudifyS3(loader loader.Loader, mattermostConfig *MattermostConfig) error 
 		endpoint = DEFAULT_S3_HOST
 		svc.UseSsl = true
 	}
-	if svc.UseSsl {
-		endpoint = "https://" + endpoint
-	} else {
-		endpoint = "http://" + endpoint
-	}
+	mattermostConfig.FileSettings.AmazonS3SSL = svc.UseSsl
 	if svc.Port != 0 {
 		endpoint += ":" + strconv.Itoa(svc.Port)
 	}
