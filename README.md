@@ -2,8 +2,8 @@
 Integrate [mattermost](http://www.mattermost.org/) into Cloud Foundry or Heroku (use [gautocloud](https://github.com/cloudfoundry-community/gautocloud)).
 
 **Why it's different from the [mattermost-boshrelease](https://github.com/cloudfoundry-community/mattermost-boshrelease) ?** 
-the boshrelease made by stark&wayne is made for Cloud Foundry 
-operators and only them can deploy mattermost in an IaaS (not Cloud Foundry in fact). 
+the BOSH release made by Stark & Wayne is made for Cloud Foundry 
+operators and only they can deploy mattermost in an IaaS (not Cloud Foundry in fact). 
 Here it's made for final Cloud Foundry users who want a private mattermost running inside a PaaS like [Bluemix](https://console.ng.bluemix.net/), [PWS](https://run.pivotal.io) or [Heroku](https://www.heroku.com/).
 
 [Mattermost](http://www.mattermost.org/) is an open source, on-prem Slack-alternative.
