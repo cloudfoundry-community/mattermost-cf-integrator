@@ -2,10 +2,10 @@ package mci_test
 
 import (
 	. "github.com/cloudfoundry-community/mattermost-cf-integrator/mci"
-	"path"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"os"
+	"path"
 )
 
 var _ = Describe("Mci", func() {
@@ -33,7 +33,7 @@ var _ = Describe("Mci", func() {
 
 			err := CloudifyConfig(&MattermostConfig{})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("Not in any cloud"))
+			Expect(err.Error()).To(ContainSubstring("Cannot find any"))
 		})
 	})
 	Context("in cloud", func() {
