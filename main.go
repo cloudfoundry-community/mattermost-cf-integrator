@@ -29,9 +29,9 @@ func main() {
 	var mattermostExec *exec.Cmd
 	if len(os.Args) > 1 {
 		args := os.Args[1:]
-		mattermostExec = exec.Command(path.Join(wd, "bin", "platform"), args...)
+		mattermostExec = exec.Command(path.Join(wd, "bin", "mattermost"), args...)
 	} else {
-		mattermostExec = exec.Command(path.Join(wd, "bin", "platform"))
+		mattermostExec = exec.Command(path.Join(wd, "bin", "mattermost"))
 	}
 
 	mattermostExec.Stdout = os.Stdout

@@ -16,7 +16,7 @@ send_slack() {
     notifslack $insecure --url $slack_url -c $slack_channel -u $slack_username -i $slack_icon "$message"
 }
 
-actual_version=$(curl -s http://about.mattermost.com/download/ -L | pup '.p1.s1' | grep Release | awk '{print $3}')
+actual_version=$(curl -s http://about.mattermost.com/download/ -L | pup 'p.release-text span text{}' | sed -n 2p | awk '{print $1}')
 current_version=$(head -n 1 "$CW/mattermost-integrator-release/tag")
 if [ "v$actual_version" == "$current_version" ]; then
     echoc "[yellow]You should don't care about this error."
