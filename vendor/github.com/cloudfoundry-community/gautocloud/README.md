@@ -14,6 +14,7 @@ This project can be assimilated to the [spring-cloud-connector](https://github.c
 
 - [Usage by example](#usage-by-example)
 - [Default connectors](/docs/connectors.md)
+- [Community connectors](/wiki/Connectors)
 - [Cloud Environments](#cloud-environments)
   - [Cloud Foundry](#cloud-foundry)
   - [Heroku](#heroku)
@@ -59,10 +60,10 @@ import (
 
 func init(){
     // Gautocloud use logrus as logger, see: https://github.com/sirupsen/logrus
-    // When using facade, first log messages are emitted with default level from logrus (INFO) and debug message cannot be seen
-    // You must explicitely ask to see logs which couldn't be seen during initialization
+    // When using facade, first log messages are emitted with default level from logrus (INFO) and debug message cannot be seen.
+    // To be able to see log message on load simply add the env var `GAUTOCLOUD_DEBUG` to `true`, you will be able to 
+    // see debug message from gautocloud (you can also set `json` instead of `true` to see logs as json).
     log.SetLevel(log.DebugLevel)
-    gautocloud.ShowPreviousLog()
 }
 
 func main() {
@@ -138,7 +139,6 @@ You can see connectors made by the community on the dedicated wiki page: https:/
   - `home`: (type: *string*) root folder for the deployed app.
   - `index`: (type: *int*) index of the app.
   - `memory_limit`: (type: *string*) maximum amount of memory that each instance of the application can consume.
-  - `port`: (type: *int*) port of the app.
   - `space_id`: (type: *string*) id of the space.
   - `space_name_id`: (type: *string*) name of the space.
   - `temp_dir`: (type: *string*) directory location where temporary and staging files are stored.
@@ -178,7 +178,6 @@ It returns a service with credentials:
 - **App information name**: Set the env var `GAUTOCLOUD_APP_NAME` to give a name to your app instead it will be `<unknown>`
 - **App information properties**:
   - `host`: (type: *string*) host of the app.
-  - `port`: (type: *int*) port of the app.
 
 ### Kubernetes
 
@@ -209,18 +208,19 @@ It returns a service with credentials:
 - **App information name**: Name of the app given by the env var `HOSTNAME`
 - **App information properties**:
   - `host`: (type: *string*) host of the app.
-  - `port`: (type: *int*) port of the app.
   - All values starting by `KUBERNETES` in env vars key.
   
 ### Local
 
-This is a special *CloudEnv* and can be considered as a fake one. 
+This is a special *CloudEnv* and can be considered as a fake one. This is cloud env is always triggered if none cloud env was found.
+
 You can also use it to be able to use a config file directly without pain (but it's not 12 factors).
 
-You have 2 possibilities to trigger this cloud env (they can be used in same time):
-- You can set the env var `CLOUD_FILE` which contains the path of a configuration files containing services.
-- You can create a `config file` called `config.yml` in your current working directory or set the env var `CONFIG_FILE` 
-which contains the path of your config file. 
+You can set the env var `CLOUD_FILE` which contains the path of a configuration files containing services.
+
+You can create a `config file` called `config.yml` in your current working directory or set the env var `CONFIG_FILE` 
+which contains the path of your config file. It can contains anything you wants, this will register by itself a service 
+named `config` with tag `config` which contains you configuration from the file.
 
 A `config file` or a `cloud file` can be a `yml`, `json`, `toml` or `hcl` file.
 
@@ -241,12 +241,15 @@ services:
 
 You can see how to follow the same pattern with other format here: [/cloudenv/local_cloudenv_test.go#L13-L86](/cloudenv/local_cloudenv_test.go#L13-L86).
 
-- **Cloud Detection**: if the `CLOUD_FILE` env var exists and not empty or if `config file` can be found.
+- **Cloud Detection**: Always detected, used as fallback when no cloud env found.
 - **Service detection by name**: Look if a service in the config file match the name required by a connector.
 - **Service detection by tags**: Look if a service in the config file match one of tag required by a connector.
 - **App information id**: random uuid
 - **App information name**: The name given in the config file, if not set it will be `<unknown>`
 - **App information properties**: *None*
+
+**NOTE**: A `config` service is always created which permit to use [ConfigFileInterceptor](https://godoc.org/github.com/cloudfoundry-community/gautocloud/interceptor/configfile#ConfigFileInterceptor) 
+this is a great interceptor to use with a [generic config connector](https://github.com/cloudfoundry-community/gautocloud/blob/master/docs/connectors.md#config).
 
 ## Concept
 
@@ -333,6 +336,7 @@ func main() {
         
         appInfo := ld.GetAppInfo() // retrieve all informations about your application instance
         fmt.Println(appInfo.Name) // give the app name
+        fmt.Println(appInfo.Port) // give the port to listen to
         // by injection 
         var c *dbtype.MysqlDB // this is just a wrapper of *net/sql.DB you can use as normal sql.DB client
         err := ld.Inject(&c) // you can also use gautocloud.InjectFromId("mysql", &c) where "mysql" is the id of the connector to use

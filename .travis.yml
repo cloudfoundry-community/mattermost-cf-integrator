@@ -1,23 +1,23 @@
 language: go
 go:
-- 1.9
+  - "1.11"
 install:
-- go get -v github.com/golang/protobuf/proto
-- go get github.com/onsi/ginkgo/ginkgo
-- go get github.com/onsi/gomega
-- go get -v -d ./...
+  - go get -v github.com/golang/protobuf/proto
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get github.com/onsi/gomega
+  - go get golang.org/x/sys/...
 script:
-- bin/test
+  - bin/test
 after_success:
-- export FINAL_TAG=`echo $TRAVIS_TAG | sed -e "s/v//g"`
-- curl https://releases.mattermost.com/${FINAL_TAG}/mattermost-team-${FINAL_TAG}-linux-amd64.tar.gz -o mattermost.tar.gz
-- tar -xvzf mattermost.tar.gz
-- go build
-- mv mattermost-cf-integrator mattermost/
-- ! 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
-- cd mattermost
-- zip -r ../mattermost-cf.zip ./*
-- cd ..
+  - export FINAL_TAG=`echo $TRAVIS_TAG | sed -e "s/v//g"`
+  - curl https://releases.mattermost.com/${FINAL_TAG}/mattermost-team-${FINAL_TAG}-linux-amd64.tar.gz -o mattermost.tar.gz
+  - tar -xvzf mattermost.tar.gz
+  - go build
+  - mv mattermost-cf-integrator mattermost/
+  - ! 'echo "web: ./mattermost-cf-integrator" > mattermost/Procfile'
+  - cd mattermost
+  - zip -r ../mattermost-cf.zip ./*
+  - cd ..
 deploy:
   provider: releases
   api_key:

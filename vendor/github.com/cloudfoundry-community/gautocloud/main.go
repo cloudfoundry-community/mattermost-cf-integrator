@@ -107,7 +107,7 @@ func IsInACloudEnv() bool {
 	return defaultLoader.IsInACloudEnv()
 }
 
-// Show previous logs entries created at initialization
-func ShowPreviousLog() {
-	defaultLoader.ShowPreviousLog()
+// Reload environment and connectors
+func Reload() {
+	defaultLoader.Reload()
 }

@@ -53,7 +53,7 @@ type QueryUri struct {
 }
 
 // Decode a map of credentials into a reflected Value
-func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Value) error {
+func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Value, noDefaultVal bool) error {
 	v := ps
 	if ps.Kind() == reflect.Ptr {
 		v = ps.Elem()
@@ -78,7 +78,11 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 		if defaultValueFromTag != "" {
 			tag.DefaultValue = defaultValueFromTag
 		}
-		data := retrieveFinalData(vField.Kind(), serviceCredentials, key, tag.DefaultValue)
+		defaultValue := tag.DefaultValue
+		if noDefaultVal {
+			defaultValue = ""
+		}
+		data := retrieveFinalData(vField.Type(), serviceCredentials, key, defaultValue)
 		if data == nil {
 			continue
 		}
@@ -89,13 +93,13 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 				return NewErrDecode(fmt.Sprintf(
 					"Error on field '%s' when trying to convert value '%s' in '%s': %s",
 					tField.Name,
-					tag.DefaultValue,
+					defaultValue,
 					vField.Kind().String(),
 					err.Error(),
 				))
 			}
 		}
-		err = affect(data, vField)
+		err = affect(data, vField, noDefaultVal)
 		if err != nil {
 			return NewErrDecode(fmt.Sprintf("Error on field '%s': %s", tField.Name, err.Error()))
 		}
@@ -106,7 +110,13 @@ func UnmarshalToValue(serviceCredentials map[string]interface{}, ps reflect.Valu
 // Decode a map of credentials into a structure
 func Unmarshal(serviceCredentials map[string]interface{}, obj interface{}) error {
 	ps := reflect.ValueOf(obj)
-	return UnmarshalToValue(serviceCredentials, ps)
+	return UnmarshalToValue(serviceCredentials, ps, false)
+}
+
+// Decode a map of credentials into a structure without default values
+func UnmarshalNoDefault(serviceCredentials map[string]interface{}, obj interface{}) error {
+	ps := reflect.ValueOf(obj)
+	return UnmarshalToValue(serviceCredentials, ps, true)
 }
 func parseForInt(data interface{}, vField reflect.Value) interface{} {
 	if reflect.ValueOf(data).Kind() != reflect.Float32 &&
@@ -143,7 +153,7 @@ func parseForFloat(data interface{}, vField reflect.Value) float64 {
 	return data.(float64)
 }
 
-func affect(data interface{}, vField reflect.Value) error {
+func affect(data interface{}, vField reflect.Value, noDefaultVal bool) error {
 	switch vField.Kind() {
 	case reflect.String:
 		vField.SetString(data.(string))
@@ -199,7 +209,7 @@ func affect(data interface{}, vField reflect.Value) error {
 			newElem = dataValueElem
 			if dataValueElem.Type() == reflect.TypeOf(make(map[string]interface{})) {
 				newElem = reflect.New(vField.Type().Elem())
-				UnmarshalToValue(dataValueElem.Interface().(map[string]interface{}), newElem)
+				UnmarshalToValue(dataValueElem.Interface().(map[string]interface{}), newElem, noDefaultVal)
 				newElem = newElem.Elem()
 			}
 			vField.Set(reflect.Append(vField, newElem))
@@ -221,7 +231,7 @@ func affect(data interface{}, vField reflect.Value) error {
 		if vField.IsNil() {
 			vField.Set(reflect.New(vField.Type().Elem()))
 		}
-		err := affect(data, vField.Elem())
+		err := affect(data, vField.Elem(), noDefaultVal)
 		if err != nil {
 			return err
 		}
@@ -231,13 +241,12 @@ func affect(data interface{}, vField reflect.Value) error {
 		if vField.Type() != servUriType && reflect.TypeOf(data) != reflect.TypeOf(make(map[string]interface{})) {
 			return NewErrTypeNotSupported(vField)
 		}
-		if vField.Type() == reflect.TypeOf(make(map[string]interface{})) &&
+		if vField.Kind() == reflect.Map &&
 			reflect.TypeOf(data) == reflect.TypeOf(make(map[string]interface{})) {
-			vField.Set(reflect.ValueOf(data))
-			break
+			return unmarshalUntypedMap(data.(map[string]interface{}), vField, noDefaultVal)
 		}
 		if reflect.TypeOf(data) == reflect.TypeOf(make(map[string]interface{})) {
-			return UnmarshalToValue(data.(map[string]interface{}), vField)
+			return UnmarshalToValue(data.(map[string]interface{}), vField, noDefaultVal)
 		}
 		serviceUrl, err := url.Parse(data.(string))
 		if err != nil {
@@ -246,6 +255,35 @@ func affect(data interface{}, vField reflect.Value) error {
 		serviceUri := urlToServiceUri(serviceUrl)
 		vField.Set(reflect.ValueOf(serviceUri))
 		break
+	}
+	return nil
+}
+func unmarshalUntypedMap(data map[string]interface{}, vField reflect.Value, noDefaultVal bool) error {
+	if vField.Type() == reflect.TypeOf(make(map[string]interface{})) {
+		vField.Set(reflect.ValueOf(data))
+		return nil
+	}
+	if vField.IsNil() {
+		vField.Set(reflect.MakeMap(vField.Type()))
+	}
+	for name, val := range data {
+		if reflect.TypeOf(val) != reflect.TypeOf(make(map[string]interface{})) {
+			vField.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(val))
+			continue
+		}
+		typeElem := vField.Type().Elem()
+		if typeElem.Kind() == reflect.Ptr {
+			typeElem = typeElem.Elem()
+		}
+		newElem := reflect.New(typeElem)
+		err := UnmarshalToValue(val.(map[string]interface{}), newElem, noDefaultVal)
+		if err != nil {
+			return err
+		}
+		if vField.Type().Elem().Kind() != reflect.Ptr {
+			newElem = newElem.Elem()
+		}
+		vField.SetMapIndex(reflect.ValueOf(name), newElem)
 	}
 	return nil
 }
@@ -292,11 +330,11 @@ func getDefaultTagValue(tags []string) string {
 	}
 	return ""
 }
-func retrieveFinalData(kind reflect.Kind, serviceCredentials map[string]interface{}, key, defaultValue string) interface{} {
+func retrieveFinalData(typeOf reflect.Type, serviceCredentials map[string]interface{}, key, defaultValue string) interface{} {
 	valueExists := isValueExists(serviceCredentials, key)
 	if !valueExists &&
 		defaultValue == "" &&
-		kind != reflect.Struct {
+		typeOf.Kind() != reflect.Struct {
 		return nil
 	}
 	if valueExists {
@@ -305,8 +343,11 @@ func retrieveFinalData(kind reflect.Kind, serviceCredentials map[string]interfac
 	if !valueExists && defaultValue != "" {
 		return defaultValue
 	}
-	if !valueExists && kind == reflect.Struct {
+	if !valueExists && typeOf.Kind() == reflect.Struct && reflect.TypeOf(ServiceUri{}) == typeOf {
 		return make(map[string]interface{})
+	}
+	if !valueExists && typeOf.Kind() == reflect.Struct {
+		return serviceCredentials
 	}
 	return nil
 }
